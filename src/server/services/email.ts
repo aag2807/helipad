@@ -14,9 +14,9 @@ interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
-  userId: string;
+  userId?: string;
   bookingId?: string;
-  type: "confirmation" | "cancellation" | "reminder";
+  type: "confirmation" | "cancellation" | "reminder" | "password_reset";
 }
 
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {

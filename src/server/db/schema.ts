@@ -42,9 +42,9 @@ export const settings = sqliteTable("settings", {
 // Email logs table
 export const emailLogs = sqliteTable("email_logs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   bookingId: text("booking_id").references(() => bookings.id, { onDelete: "set null" }),
-  type: text("type", { enum: ["confirmation", "cancellation", "reminder"] }).notNull(),
+  type: text("type", { enum: ["confirmation", "cancellation", "reminder", "password_reset"] }).notNull(),
   status: text("status", { enum: ["sent", "failed"] }).notNull(),
   sentAt: integer("sent_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   error: text("error"),

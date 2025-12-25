@@ -68,6 +68,8 @@ export const passwordResetRouter = createTRPCRouter({
         await sendEmail({
           to: user.email,
           subject: "Reset Your Password - Helipad Booking",
+          type: "password_reset",
+          userId: user.id,
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #18181b;">Reset Your Password</h2>
