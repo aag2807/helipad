@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CalendarView } from "@/hooks/use-calendar";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface CalendarHeaderProps {
   title: string;
@@ -22,6 +23,14 @@ export function CalendarHeader({
   onNext,
   onToday,
 }: CalendarHeaderProps) {
+  const { t } = useTranslations();
+
+  const viewLabels: Record<CalendarView, string> = {
+    day: t("calendar.day"),
+    week: t("calendar.week"),
+    month: t("calendar.month"),
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       {/* Navigation */}
@@ -34,7 +43,7 @@ export function CalendarHeader({
         </Button>
         <Button variant="outline" onClick={onToday} className="ml-2">
           <CalendarIcon className="w-4 h-4 mr-2" />
-          Today
+          {t("calendar.today")}
         </Button>
         <h2 className="text-lg font-semibold text-zinc-900 ml-4">{title}</h2>
       </div>
@@ -46,13 +55,13 @@ export function CalendarHeader({
             key={v}
             onClick={() => onViewChange(v)}
             className={cn(
-              "px-4 py-1.5 text-sm font-medium rounded-lg transition-all capitalize",
+              "px-4 py-1.5 text-sm font-medium rounded-lg transition-all",
               view === v
                 ? "bg-white text-zinc-900 shadow-sm"
                 : "text-zinc-600 hover:text-zinc-900"
             )}
           >
-            {v}
+            {viewLabels[v]}
           </button>
         ))}
       </div>

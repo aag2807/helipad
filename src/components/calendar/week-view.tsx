@@ -2,8 +2,10 @@
 
 import { useMemo } from "react";
 import { format, isSameDay, isToday, isBefore, isWithinInterval } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { generateTimeSlots, getSlotDateTime } from "@/hooks/use-calendar";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Booking {
   id: string;
@@ -38,6 +40,9 @@ export function WeekView({
   onSlotClick,
   onBookingClick,
 }: WeekViewProps) {
+  const { t, locale } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
+
   const timeSlots = useMemo(
     () => generateTimeSlots(startHour, endHour, 60),
     [startHour, endHour]
@@ -76,7 +81,7 @@ export function WeekView({
             )}
           >
             <div className="text-xs text-zinc-500 uppercase">
-              {format(day, "EEE")}
+              {format(day, "EEE", { locale: dateLocale })}
             </div>
             <div
               className={cn(
@@ -166,7 +171,7 @@ export function WeekView({
                         <div className="font-semibold truncate">
                           {booking.user
                             ? `${booking.user.firstName} ${booking.user.lastName[0]}.`
-                            : "Booked"}
+                            : t("calendar.booked")}
                         </div>
                         <div className="text-[10px] opacity-75 truncate">
                           {format(bookingStart, "h:mm a")} -{" "}

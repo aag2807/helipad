@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
+import { useTranslations } from "@/hooks/use-translations";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 interface HeaderProps {
   user: {
@@ -29,23 +31,24 @@ interface HeaderProps {
   };
 }
 
-const navItems = {
-  user: [
-    { label: "Calendar", href: ROUTES.calendar, icon: Calendar },
-    { label: "My Bookings", href: ROUTES.myBookings, icon: ListOrdered },
-  ],
-  admin: [
-    { label: "Dashboard", href: ROUTES.adminDashboard, icon: LayoutDashboard },
-    { label: "Users", href: ROUTES.adminUsers, icon: Users },
-    { label: "All Bookings", href: ROUTES.adminBookings, icon: ClipboardList },
-    { label: "Settings", href: ROUTES.adminSettings, icon: Settings },
-  ],
-};
-
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const { t } = useTranslations();
+
+  const navItems = {
+    user: [
+      { label: t("navigation.calendar"), href: ROUTES.calendar, icon: Calendar },
+      { label: t("navigation.myBookings"), href: ROUTES.myBookings, icon: ListOrdered },
+    ],
+    admin: [
+      { label: t("navigation.dashboard"), href: ROUTES.adminDashboard, icon: LayoutDashboard },
+      { label: t("navigation.users"), href: ROUTES.adminUsers, icon: Users },
+      { label: t("navigation.allBookings"), href: ROUTES.adminBookings, icon: ClipboardList },
+      { label: t("navigation.settings"), href: ROUTES.adminSettings, icon: Settings },
+    ],
+  };
 
   return (
     <>
@@ -69,10 +72,15 @@ export function Header({ user }: HeaderProps) {
           </div>
 
           {/* Desktop spacer */}
-          <div className="hidden lg:block" />
+          <div className="hidden lg:block flex-1" />
 
-          {/* Profile dropdown */}
-          <div className="relative">
+          {/* Right side actions */}
+          <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <LanguageSwitcher variant="compact" />
+
+            {/* Profile dropdown */}
+            <div className="relative">
             <button
               type="button"
               className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-zinc-100 transition-colors"
@@ -104,7 +112,7 @@ export function Header({ user }: HeaderProps) {
                     onClick={() => setProfileMenuOpen(false)}
                   >
                     <User className="w-4 h-4" />
-                    Profile
+                    {t("navigation.profile")}
                   </Link>
                   <button
                     type="button"
@@ -112,11 +120,12 @@ export function Header({ user }: HeaderProps) {
                     onClick={() => signOut({ callbackUrl: "/login" })}
                   >
                     <LogOut className="w-4 h-4" />
-                    Sign out
+                    {t("auth.signOut")}
                   </button>
                 </div>
               </>
             )}
+            </div>
           </div>
         </div>
       </header>
@@ -151,7 +160,7 @@ export function Header({ user }: HeaderProps) {
             <nav className="px-4 py-6 space-y-6">
               <div>
                 <h3 className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                  Bookings
+                  {t("navigation.bookings")}
                 </h3>
                 <ul className="space-y-1">
                   {navItems.user.map((item) => {
@@ -181,7 +190,7 @@ export function Header({ user }: HeaderProps) {
               {user.role === "admin" && (
                 <div>
                   <h3 className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                    Administration
+                    {t("navigation.administration")}
                   </h3>
                   <ul className="space-y-1">
                     {navItems.admin.map((item) => {

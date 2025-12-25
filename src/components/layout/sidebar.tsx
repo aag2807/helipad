@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface SidebarProps {
   user: {
@@ -23,21 +24,22 @@ interface SidebarProps {
   };
 }
 
-const navItems = {
-  user: [
-    { label: "Calendar", href: ROUTES.calendar, icon: Calendar },
-    { label: "My Bookings", href: ROUTES.myBookings, icon: ListOrdered },
-  ],
-  admin: [
-    { label: "Dashboard", href: ROUTES.adminDashboard, icon: LayoutDashboard },
-    { label: "Users", href: ROUTES.adminUsers, icon: Users },
-    { label: "All Bookings", href: ROUTES.adminBookings, icon: ClipboardList },
-    { label: "Settings", href: ROUTES.adminSettings, icon: Settings },
-  ],
-};
-
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useTranslations();
+
+  const navItems = {
+    user: [
+      { label: t("navigation.calendar"), href: ROUTES.calendar, icon: Calendar },
+      { label: t("navigation.myBookings"), href: ROUTES.myBookings, icon: ListOrdered },
+    ],
+    admin: [
+      { label: t("navigation.dashboard"), href: ROUTES.adminDashboard, icon: LayoutDashboard },
+      { label: t("navigation.users"), href: ROUTES.adminUsers, icon: Users },
+      { label: t("navigation.allBookings"), href: ROUTES.adminBookings, icon: ClipboardList },
+      { label: t("navigation.settings"), href: ROUTES.adminSettings, icon: Settings },
+    ],
+  };
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-zinc-200">
@@ -54,7 +56,7 @@ export function Sidebar({ user }: SidebarProps) {
         {/* Main nav */}
         <div>
           <h3 className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-            Bookings
+            {t("navigation.bookings")}
           </h3>
           <ul className="space-y-1">
             {navItems.user.map((item) => {
@@ -84,7 +86,7 @@ export function Sidebar({ user }: SidebarProps) {
         {user.role === "admin" && (
           <div>
             <h3 className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-              Administration
+              {t("navigation.administration")}
             </h3>
             <ul className="space-y-1">
               {navItems.admin.map((item) => {

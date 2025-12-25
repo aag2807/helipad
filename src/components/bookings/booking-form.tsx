@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, addMinutes, setHours, setMinutes } from "date-fns";
+import { format, addMinutes, setHours, setMinutes, differenceInMinutes } from "date-fns";
 import { Loader2, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { generateTimeSlots } from "@/hooks/use-calendar";
+import { useTranslations } from "@/hooks/use-translations";
 
 const bookingFormSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -31,6 +32,15 @@ const bookingFormSchema = z.object({
 });
 
 type BookingFormData = z.infer<typeof bookingFormSchema>;
+
+interface EditingBooking {
+  id: string;
+  startTime: Date;
+  endTime: Date;
+  purpose: string;
+  notes?: string | null;
+  contactPhone?: string | null;
+}
 
 interface BookingFormProps {
   open: boolean;
@@ -46,18 +56,8 @@ interface BookingFormProps {
   initialDate?: Date;
   initialHour?: number;
   initialMinute?: number;
+  editingBooking?: EditingBooking | null;
 }
-
-const DURATION_OPTIONS = [
-  { value: 15, label: "15 minutes" },
-  { value: 30, label: "30 minutes" },
-  { value: 45, label: "45 minutes" },
-  { value: 60, label: "1 hour" },
-  { value: 90, label: "1.5 hours" },
-  { value: 120, label: "2 hours" },
-  { value: 180, label: "3 hours" },
-  { value: 240, label: "4 hours" },
-];
 
 export function BookingForm({
   open,
@@ -67,8 +67,21 @@ export function BookingForm({
   initialDate,
   initialHour,
   initialMinute,
+  editingBooking,
 }: BookingFormProps) {
+  const { t } = useTranslations();
   const timeSlots = useMemo(() => generateTimeSlots(6, 22, 15), []);
+
+  const DURATION_OPTIONS = [
+    { value: 15, label: t("bookings.durations.15min") },
+    { value: 30, label: t("bookings.durations.30min") },
+    { value: 45, label: t("bookings.durations.45min") },
+    { value: 60, label: t("bookings.durations.1hour") },
+    { value: 90, label: t("bookings.durations.1_5hours") },
+    { value: 120, label: t("bookings.durations.2hours") },
+    { value: 180, label: t("bookings.durations.3hours") },
+    { value: 240, label: t("bookings.durations.4hours") },
+  ];
 
   const {
     register,
@@ -83,23 +96,40 @@ export function BookingForm({
     },
   });
 
-  // Reset form when dialog opens with initial values
+  // Reset form when dialog opens with initial values or editing booking
   useEffect(() => {
     if (open) {
-      const date = initialDate || new Date();
-      const hour = initialHour ?? 9;
-      const minute = initialMinute ?? 0;
+      if (editingBooking) {
+        // Pre-fill form with existing booking data
+        const startDate = new Date(editingBooking.startTime);
+        const endDate = new Date(editingBooking.endTime);
+        const duration = differenceInMinutes(endDate, startDate);
 
-      reset({
-        date: format(date, "yyyy-MM-dd"),
-        startTime: `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
-        duration: 60,
-        purpose: "",
-        notes: "",
-        contactPhone: "",
-      });
+        reset({
+          date: format(startDate, "yyyy-MM-dd"),
+          startTime: `${startDate.getHours().toString().padStart(2, "0")}:${startDate.getMinutes().toString().padStart(2, "0")}`,
+          duration: duration,
+          purpose: editingBooking.purpose,
+          notes: editingBooking.notes || "",
+          contactPhone: editingBooking.contactPhone || "",
+        });
+      } else {
+        // New booking - use initial values
+        const date = initialDate || new Date();
+        const hour = initialHour ?? 9;
+        const minute = initialMinute ?? 0;
+
+        reset({
+          date: format(date, "yyyy-MM-dd"),
+          startTime: `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
+          duration: 60,
+          purpose: "",
+          notes: "",
+          contactPhone: "",
+        });
+      }
     }
-  }, [open, initialDate, initialHour, initialMinute, reset]);
+  }, [open, initialDate, initialHour, initialMinute, editingBooking, reset]);
 
   const watchedDate = watch("date");
   const watchedStartTime = watch("startTime");
@@ -133,9 +163,11 @@ export function BookingForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Book Helipad</DialogTitle>
+          <DialogTitle>
+            {editingBooking ? t("bookings.editBooking") : t("bookings.bookHelipad")}
+          </DialogTitle>
           <DialogDescription>
-            Select your preferred time slot and provide booking details.
+            {editingBooking ? t("bookings.updateTimeSlot") : t("bookings.selectTimeSlot")}
           </DialogDescription>
         </DialogHeader>
 
@@ -144,7 +176,7 @@ export function BookingForm({
             {/* Date */}
             <div className="space-y-2">
               <Label htmlFor="date" required>
-                Date
+                {t("bookings.date")}
               </Label>
               <div className="relative">
                 <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -166,7 +198,7 @@ export function BookingForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startTime" required>
-                  Start Time
+                  {t("bookings.startTime")}
                 </Label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -189,7 +221,7 @@ export function BookingForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="duration" required>
-                  Duration
+                  {t("bookings.duration")}
                 </Label>
                 <Select
                   id="duration"
@@ -210,7 +242,7 @@ export function BookingForm({
               <div className="flex items-center gap-2 p-3 bg-violet-50 rounded-xl text-sm">
                 <Clock className="w-4 h-4 text-violet-600" />
                 <span className="text-violet-700">
-                  Booking ends at <strong>{endTime}</strong>
+                  {t("bookings.bookingEndsAt")} <strong>{endTime}</strong>
                 </span>
               </div>
             )}
@@ -218,13 +250,13 @@ export function BookingForm({
             {/* Purpose */}
             <div className="space-y-2">
               <Label htmlFor="purpose" required>
-                Purpose
+                {t("bookings.purpose")}
               </Label>
               <Input
                 id="purpose"
                 {...register("purpose")}
                 error={!!errors.purpose}
-                placeholder="e.g., Medical transport, VIP arrival"
+                placeholder={t("bookings.purposePlaceholder")}
               />
               {errors.purpose && (
                 <p className="text-xs text-red-600">{errors.purpose.message}</p>
@@ -233,19 +265,19 @@ export function BookingForm({
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes">{t("bookings.notesOptional")}</Label>
               <textarea
                 id="notes"
                 {...register("notes")}
                 className="flex w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-colors resize-none"
                 rows={3}
-                placeholder="Any special requirements or notes..."
+                placeholder={t("bookings.notesPlaceholder")}
               />
             </div>
 
             {/* Contact phone */}
             <div className="space-y-2">
-              <Label htmlFor="contactPhone">Contact Phone (optional)</Label>
+              <Label htmlFor="contactPhone">{t("bookings.contactPhoneOptional")}</Label>
               <Input
                 id="contactPhone"
                 type="tel"
@@ -261,11 +293,11 @@ export function BookingForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-              Book Now
+              {editingBooking ? t("bookings.updateBooking") : t("bookings.bookNow")}
             </Button>
           </DialogFooter>
         </form>

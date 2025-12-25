@@ -1,0 +1,426 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "saveChanges": "Guardar Cambios",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "refresh": "Actualizar",
+    "clear": "Limpiar",
+    "clearAll": "Limpiar todo",
+    "clearSelection": "Limpiar selección",
+    "search": "Buscar",
+    "filters": "Filtros",
+    "exportCSV": "Exportar CSV",
+    "yes": "Sí",
+    "no": "No",
+    "or": "o",
+    "and": "y",
+    "add": "Agregar",
+    "remove": "Eliminar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información",
+    "noResults": "No se encontraron resultados",
+    "selected": "seleccionado",
+    "selectedPlural": "seleccionados",
+    "showing": "Mostrando",
+    "of": "de",
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+
+  "auth": {
+    "welcomeBack": "Bienvenido de nuevo",
+    "signInToManage": "Inicia sesión para gestionar tus reservas",
+    "signIn": "Iniciar sesión",
+    "signingIn": "Iniciando sesión...",
+    "signOut": "Cerrar sesión",
+    "username": "Usuario",
+    "enterUsername": "Ingresa tu usuario",
+    "password": "Contraseña",
+    "enterPassword": "Ingresa tu contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "unexpectedError": "Ocurrió un error inesperado",
+    "demoCredentials": "Credenciales de demostración:",
+    "invalidCredentials": "Usuario o contraseña inválidos"
+  },
+
+  "forgotPassword": {
+    "title": "¿Olvidaste tu contraseña?",
+    "description": "No te preocupes, te enviaremos instrucciones para restablecerla.",
+    "emailAddress": "Correo electrónico",
+    "enterEmail": "Ingresa tu correo electrónico",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "sending": "Enviando...",
+    "backToLogin": "Volver al inicio de sesión",
+    "checkEmail": "Revisa tu correo electrónico",
+    "emailSentDescription": "Si existe una cuenta para {email}, hemos enviado instrucciones para restablecer tu contraseña.",
+    "linkExpiry": "El enlace expirará en 1 hora. No olvides revisar tu carpeta de spam."
+  },
+
+  "resetPassword": {
+    "title": "Establecer Nueva Contraseña",
+    "description": "Hola {firstName}, elige una nueva contraseña para tu cuenta.",
+    "newPassword": "Nueva Contraseña",
+    "enterNewPassword": "Ingresa tu nueva contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "confirmNewPassword": "Confirma tu nueva contraseña",
+    "resetPassword": "Restablecer Contraseña",
+    "resetting": "Restableciendo...",
+    "passwordReset": "¡Contraseña Restablecida!",
+    "passwordResetSuccess": "Tu contraseña ha sido restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña.",
+    "goToLogin": "Ir al Inicio de Sesión",
+    "invalidOrExpiredLink": "Enlace Inválido o Expirado",
+    "invalidLinkDescription": "Este enlace de restablecimiento de contraseña es inválido o ha expirado. Por favor solicita uno nuevo.",
+    "requestNewLink": "Solicitar Nuevo Enlace",
+    "validatingLink": "Validando enlace de restablecimiento...",
+    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+    "passwordsDontMatch": "Las contraseñas no coinciden"
+  },
+
+  "navigation": {
+    "bookings": "Reservas",
+    "calendar": "Calendario",
+    "myBookings": "Mis Reservas",
+    "administration": "Administración",
+    "dashboard": "Panel de Control",
+    "users": "Usuarios",
+    "allBookings": "Todas las Reservas",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "admin": "Admin"
+  },
+
+  "roles": {
+    "admin": "Administrador",
+    "user": "Usuario"
+  },
+
+  "calendar": {
+    "today": "Hoy",
+    "day": "Día",
+    "week": "Semana",
+    "month": "Mes",
+    "booked": "Reservado",
+    "more": "más"
+  },
+
+  "calendarPage": {
+    "title": "Calendario de Reservas",
+    "description": "Ver y reservar horarios disponibles del helipuerto",
+    "newBooking": "Nueva Reserva",
+    "legend": {
+      "myBookings": "Mis Reservas",
+      "otherBookings": "Otras Reservas",
+      "available": "Disponible"
+    }
+  },
+
+  "weekDays": {
+    "short": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb",
+      "sun": "Dom"
+    },
+    "full": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    }
+  },
+
+  "bookings": {
+    "bookHelipad": "Reservar Helipuerto",
+    "selectTimeSlot": "Selecciona tu horario preferido y proporciona los detalles de la reserva.",
+    "date": "Fecha",
+    "startTime": "Hora de Inicio",
+    "duration": "Duración",
+    "purpose": "Propósito",
+    "purposePlaceholder": "ej., Transporte médico, Llegada VIP",
+    "notes": "Notas",
+    "notesOptional": "Notas (opcional)",
+    "notesPlaceholder": "Cualquier requisito especial o notas...",
+    "contactPhone": "Teléfono de Contacto",
+    "contactPhoneOptional": "Teléfono de Contacto (opcional)",
+    "bookNow": "Reservar Ahora",
+    "editBooking": "Editar Reserva",
+    "updateBooking": "Actualizar Reserva",
+    "updateTimeSlot": "Modifica los detalles de la reserva a continuación.",
+    "bookingEndsAt": "La reserva termina a las",
+    "durations": {
+      "15min": "15 minutos",
+      "30min": "30 minutos",
+      "45min": "45 minutos",
+      "1hour": "1 hora",
+      "1_5hours": "1.5 horas",
+      "2hours": "2 horas",
+      "3hours": "3 horas",
+      "4hours": "4 horas"
+    }
+  },
+
+  "bookingDetails": {
+    "title": "Detalles de la Reserva",
+    "date": "Fecha",
+    "time": "Hora",
+    "bookedBy": "Reservado por",
+    "purpose": "Propósito",
+    "notes": "Notas",
+    "contact": "Contacto",
+    "cancelBooking": "Cancelar Reserva",
+    "bookingPassed": "Esta reserva ya ha pasado"
+  },
+
+  "bookingStatus": {
+    "confirmed": "Confirmada",
+    "cancelled": "Cancelada",
+    "completed": "Completada",
+    "pending": "Pendiente"
+  },
+
+  "myBookings": {
+    "title": "Mis Reservas",
+    "description": "Ver y gestionar tus reservas del helipuerto",
+    "upcoming": "Próximas",
+    "past": "Pasadas",
+    "noUpcoming": "No hay reservas próximas",
+    "noPast": "No hay reservas pasadas",
+    "bookFirstSlot": "Reserva tu primer horario del helipuerto para comenzar.",
+    "completedBookingsHere": "Tus reservas completadas aparecerán aquí."
+  },
+
+  "adminDashboard": {
+    "title": "Panel de Administración",
+    "description": "Resumen de tu sistema de reservas del helipuerto",
+    "todaysBookings": "Reservas de Hoy",
+    "thisWeek": "Esta Semana",
+    "thisMonth": "Este Mes",
+    "upcoming7Days": "Próximos (7 días)",
+    "totalUsers": "Total de Usuarios",
+    "activeUsers": "activos",
+    "allTimeBookings": "Reservas Totales",
+    "cancelledMonth": "Canceladas (Mes)",
+    "topBookersMonth": "Mejores Reservadores (Mes)",
+    "noBookingsMonth": "Sin reservas este mes",
+    "popularTimeSlotsMonth": "Horarios Populares (Mes)",
+    "bookingsCount": "reservas"
+  },
+
+  "adminUsers": {
+    "title": "Gestión de Usuarios",
+    "description": "Gestionar usuarios y sus permisos",
+    "addUser": "Agregar Usuario",
+    "searchUsers": "Buscar usuarios...",
+    "allRoles": "Todos los Roles",
+    "allStatus": "Todos los Estados",
+    "showingOf": "Mostrando {count} de {total} usuarios",
+    "noUsersFound": "No se encontraron usuarios",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "tableHeaders": {
+      "user": "Usuario",
+      "username": "Nombre de Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "created": "Creado"
+    }
+  },
+
+  "userForm": {
+    "createTitle": "Crear Nuevo Usuario",
+    "editTitle": "Editar Usuario",
+    "createDescription": "Completa los detalles para crear una nueva cuenta de usuario.",
+    "editDescription": "Actualiza la información del usuario a continuación.",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "username": "Nombre de Usuario",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "passwordKeepCurrent": "Contraseña (dejar en blanco para mantener la actual)",
+    "role": "Rol",
+    "status": "Estado",
+    "createUser": "Crear Usuario",
+    "updateUser": "Actualizar Usuario",
+    "placeholders": {
+      "firstName": "Juan",
+      "lastName": "Pérez",
+      "username": "juanperez",
+      "email": "juan@ejemplo.com",
+      "passwordNew": "Mín. 8 caracteres",
+      "passwordEdit": "••••••••"
+    }
+  },
+
+  "deleteUserDialog": {
+    "title": "Eliminar Usuario",
+    "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario y todos los datos asociados.",
+    "aboutToDelete": "Estás a punto de eliminar a",
+    "bookingsWillBeDeleted": "Todas las reservas asociadas con este usuario también serán eliminadas.",
+    "deleteUser": "Eliminar Usuario"
+  },
+
+  "adminBookings": {
+    "title": "Todas las Reservas",
+    "description": "Ver y gestionar todas las reservas del helipuerto",
+    "fromDate": "Desde",
+    "toDate": "Hasta",
+    "status": "Estado",
+    "bookingsFound": "{count} reserva encontrada",
+    "bookingsFoundPlural": "{count} reservas encontradas",
+    "noBookingsFound": "No se encontraron reservas",
+    "tableHeaders": {
+      "user": "Usuario",
+      "date": "Fecha",
+      "time": "Hora",
+      "purpose": "Propósito",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "unknown": "Desconocido",
+    "bookingCancelled": "Reserva cancelada",
+    "bookingCancelledDescription": "La reserva ha sido cancelada.",
+    "exportComplete": "Exportación completa",
+    "exportedBookings": "Se exportaron {count} reservas a CSV."
+  },
+
+  "adminSettings": {
+    "title": "Configuración del Sistema",
+    "description": "Configurar los ajustes del sistema de reservas del helipuerto",
+    "operationalHours": {
+      "title": "Horario de Operación",
+      "description": "Establecer cuándo el helipuerto está disponible para reservas",
+      "openingTime": "Hora de Apertura",
+      "closingTime": "Hora de Cierre",
+      "timeSlotDuration": "Duración del Horario",
+      "maxBookingDuration": "Duración Máxima de Reserva",
+      "minAdvanceNotice": "Anticipación Mínima"
+    },
+    "blackoutDates": {
+      "title": "Fechas Bloqueadas",
+      "description": "Días en que el helipuerto no está disponible",
+      "addDate": "Agregar Fecha",
+      "noBlackoutDates": "No hay fechas bloqueadas configuradas"
+    },
+    "emailNotifications": {
+      "title": "Notificaciones por Correo",
+      "description": "Configurar ajustes de correo automatizado",
+      "confirmations": {
+        "title": "Confirmaciones de Reserva",
+        "description": "Enviar correo cuando se crea una reserva"
+      },
+      "reminders": {
+        "title": "Recordatorios de Reserva",
+        "description": "Enviar recordatorio antes de la hora de la reserva"
+      },
+      "adminNotifications": {
+        "title": "Notificaciones de Administrador",
+        "description": "Notificar a los administradores sobre nuevas reservas y cancelaciones"
+      },
+      "reminderTiming": {
+        "1hour": "1 hora",
+        "2hours": "2 horas",
+        "12hours": "12 horas",
+        "24hours": "24 horas",
+        "48hours": "48 horas"
+      }
+    },
+    "durations": {
+      "none": "Ninguna",
+      "15min": "15 minutos",
+      "30min": "30 minutos",
+      "1hour": "1 hora",
+      "2hours": "2 horas",
+      "3hours": "3 horas",
+      "4hours": "4 horas",
+      "8hours": "8 horas",
+      "24hours": "24 horas"
+    },
+    "settingsSaved": "Configuración guardada",
+    "settingsSavedDescription": "Tus cambios han sido guardados exitosamente.",
+    "blackoutDateAdded": "Fecha bloqueada agregada",
+    "blackoutDateRemoved": "Fecha bloqueada eliminada"
+  },
+
+  "profile": {
+    "title": "Perfil",
+    "description": "Gestionar la configuración de tu cuenta",
+    "tabs": {
+      "profile": "Perfil",
+      "security": "Seguridad"
+    },
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "email": "Correo Electrónico",
+    "profileUpdated": "Perfil actualizado",
+    "changePassword": {
+      "title": "Cambiar Contraseña",
+      "currentPassword": "Contraseña Actual",
+      "newPassword": "Nueva Contraseña",
+      "confirmPassword": "Confirmar Nueva Contraseña",
+      "updatePassword": "Actualizar Contraseña",
+      "passwordChanged": "Contraseña cambiada exitosamente"
+    },
+    "signOut": {
+      "title": "Cerrar Sesión",
+      "description": "Cerrar sesión de tu cuenta en este dispositivo."
+    }
+  },
+
+  "validations": {
+    "required": "{field} es requerido",
+    "dateRequired": "La fecha es requerida",
+    "startTimeRequired": "La hora de inicio es requerida",
+    "minDuration": "Mínimo 15 minutos",
+    "maxDuration": "Máximo 4 horas",
+    "purposeRequired": "El propósito es requerido",
+    "invalidEmail": "Correo electrónico inválido",
+    "usernameMin": "El nombre de usuario debe tener al menos 3 caracteres",
+    "usernameMax": "El nombre de usuario debe tener menos de 50 caracteres",
+    "usernameFormat": "El nombre de usuario solo puede contener letras, números y guiones bajos",
+    "passwordMin": "La contraseña debe tener al menos 8 caracteres",
+    "passwordsDontMatch": "Las contraseñas no coinciden",
+    "firstNameRequired": "El nombre es requerido",
+    "lastNameRequired": "El apellido es requerido",
+    "currentPasswordRequired": "La contraseña actual es requerida"
+  },
+
+  "notifications": {
+    "bookingConfirmed": "¡Reserva confirmada!",
+    "bookingConfirmedDescription": "Tu horario del helipuerto ha sido reservado.",
+    "bookingFailed": "Reserva fallida",
+    "bookingCancelled": "Reserva cancelada",
+    "bookingCancelledDescription": "Tu reserva ha sido cancelada.",
+    "cancellationFailed": "Cancelación fallida",
+    "bookingUpdated": "¡Reserva actualizada!",
+    "bookingUpdatedDescription": "Tu reserva ha sido actualizada exitosamente.",
+    "updateFailed": "Actualización fallida",
+    "newBooking": "Nueva reserva",
+    "someoneBooked": "Alguien acaba de hacer una reserva. Calendario actualizado.",
+    "bookingCancelledByOther": "Una reserva fue cancelada. Calendario actualizado."
+  },
+
+  "errors": {
+    "generic": "Algo salió mal. Por favor intenta de nuevo.",
+    "networkError": "Error de red. Por favor verifica tu conexión.",
+    "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión de nuevo.",
+    "unauthorized": "No tienes permiso para realizar esta acción.",
+    "notFound": "El recurso solicitado no fue encontrado."
+  }
+}
+

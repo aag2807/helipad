@@ -6,6 +6,7 @@ import { httpBatchLink } from "@trpc/client";
 import { trpc } from "@/lib/trpc";
 import { SessionProvider } from "next-auth/react";
 import superjson from "superjson";
+import { TranslationProvider } from "@/hooks/use-translations";
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
@@ -41,7 +42,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <TranslationProvider defaultLocale="es">
+            {children}
+          </TranslationProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </SessionProvider>

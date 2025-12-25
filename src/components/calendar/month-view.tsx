@@ -12,7 +12,9 @@ import {
   isSameDay,
   isToday,
 } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Booking {
   id: string;
@@ -43,6 +45,9 @@ export function MonthView({
   onDayClick,
   onBookingClick,
 }: MonthViewProps) {
+  const { t, locale } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
+
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
@@ -59,7 +64,15 @@ export function MonthView({
     });
   };
 
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weekDays = [
+    t("weekDays.short.mon"),
+    t("weekDays.short.tue"),
+    t("weekDays.short.wed"),
+    t("weekDays.short.thu"),
+    t("weekDays.short.fri"),
+    t("weekDays.short.sat"),
+    t("weekDays.short.sun"),
+  ];
 
   return (
     <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
@@ -122,12 +135,12 @@ export function MonthView({
                         : "bg-zinc-100 text-zinc-700 hover:ring-zinc-300"
                     )}
                   >
-                    {format(new Date(booking.startTime), "h:mm a")}
+                    {format(new Date(booking.startTime), "h:mm a", { locale: dateLocale })}
                   </button>
                 ))}
                 {dayBookings.length > 3 && (
                   <div className="text-xs text-zinc-500 pl-2">
-                    +{dayBookings.length - 3} more
+                    +{dayBookings.length - 3} {t("calendar.more")}
                   </div>
                 )}
               </div>

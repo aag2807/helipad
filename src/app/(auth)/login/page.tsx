@@ -8,11 +8,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plane } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/lib/validations";
+import { useTranslations } from "@/hooks/use-translations";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslations();
 
   const {
     register,
@@ -44,7 +47,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch {
-      setError("An unexpected error occurred");
+      setError(t("auth.unexpectedError"));
     } finally {
       setIsLoading(false);
     }
@@ -52,13 +55,18 @@ export default function LoginPage() {
 
   return (
     <div className="animate-fade-in">
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-200 mb-4">
           <Plane className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold text-zinc-900">Welcome back</h1>
-        <p className="text-zinc-500 mt-1">Sign in to manage your bookings</p>
+        <h1 className="text-2xl font-bold text-zinc-900">{t("auth.welcomeBack")}</h1>
+        <p className="text-zinc-500 mt-1">{t("auth.signInToManage")}</p>
       </div>
 
       {/* Form Card */}
@@ -75,7 +83,7 @@ export default function LoginPage() {
               htmlFor="username"
               className="block text-sm font-medium text-zinc-700"
             >
-              Username
+              {t("auth.username")}
             </label>
             <input
               {...register("username")}
@@ -84,7 +92,7 @@ export default function LoginPage() {
               autoComplete="username"
               disabled={isLoading}
               className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors disabled:opacity-50"
-              placeholder="Enter your username"
+              placeholder={t("auth.enterUsername")}
             />
             {errors.username && (
               <p className="text-sm text-red-600">{errors.username.message}</p>
@@ -97,13 +105,13 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-zinc-700"
               >
-                Password
+                {t("auth.password")}
               </label>
               <Link
                 href="/forgot-password"
                 className="text-sm text-violet-600 hover:text-violet-700 transition-colors"
               >
-                Forgot password?
+                {t("auth.forgotPassword")}
               </Link>
             </div>
             <input
@@ -113,7 +121,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               disabled={isLoading}
               className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors disabled:opacity-50"
-              placeholder="Enter your password"
+              placeholder={t("auth.enterPassword")}
             />
             {errors.password && (
               <p className="text-sm text-red-600">{errors.password.message}</p>
@@ -128,10 +136,10 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Signing in...
+                {t("auth.signingIn")}
               </>
             ) : (
-              "Sign in"
+              t("auth.signIn")
             )}
           </button>
         </form>
@@ -139,7 +147,7 @@ export default function LoginPage() {
 
       {/* Demo credentials hint */}
       <div className="mt-6 text-center text-sm text-zinc-500">
-        <p>Demo credentials:</p>
+        <p>{t("auth.demoCredentials")}</p>
         <p className="font-mono text-xs mt-1 text-zinc-600">
           admin / admin123 &nbsp;•&nbsp; demo / demo1234
         </p>

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, Mail, Lock, LogOut, Loader2, Shield } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ type PasswordData = z.infer<typeof passwordSchema>;
 export default function ProfilePage() {
   const { data: session, update } = useSession();
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
+  const { t } = useTranslations();
 
   const {
     register: registerProfile,
@@ -62,20 +64,20 @@ export default function ProfilePage() {
   const updateProfile = trpc.auth.updateProfile.useMutation({
     onSuccess: () => {
       update();
-      toast({ type: "success", title: "Profile updated" });
+      toast({ type: "success", title: t("profile.profileUpdated") });
     },
     onError: (error) => {
-      toast({ type: "error", title: "Error", description: error.message });
+      toast({ type: "error", title: t("common.error"), description: error.message });
     },
   });
 
   const changePassword = trpc.auth.changePassword.useMutation({
     onSuccess: () => {
       resetPassword();
-      toast({ type: "success", title: "Password changed successfully" });
+      toast({ type: "success", title: t("profile.changePassword.passwordChanged") });
     },
     onError: (error) => {
-      toast({ type: "error", title: "Error", description: error.message });
+      toast({ type: "error", title: t("common.error"), description: error.message });
     },
   });
 
@@ -94,8 +96,8 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">Profile</h1>
-        <p className="text-zinc-500 mt-1">Manage your account settings</p>
+        <h1 className="text-2xl font-bold text-zinc-900">{t("profile.title")}</h1>
+        <p className="text-zinc-500 mt-1">{t("profile.description")}</p>
       </div>
 
       {/* User card */}
@@ -131,7 +133,7 @@ export default function ProfilePage() {
           }`}
         >
           <User className="w-4 h-4" />
-          Profile
+          {t("profile.tabs.profile")}
         </button>
         <button
           onClick={() => setActiveTab("security")}
@@ -142,7 +144,7 @@ export default function ProfilePage() {
           }`}
         >
           <Shield className="w-4 h-4" />
-          Security
+          {t("profile.tabs.security")}
         </button>
       </div>
 
@@ -154,7 +156,7 @@ export default function ProfilePage() {
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t("profile.firstName")}</Label>
               <Input
                 id="firstName"
                 {...registerProfile("firstName")}
@@ -167,7 +169,7 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t("profile.lastName")}</Label>
               <Input
                 id="lastName"
                 {...registerProfile("lastName")}
@@ -181,7 +183,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("profile.email")}</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
               <Input
@@ -201,7 +203,7 @@ export default function ProfilePage() {
               {updateProfile.isPending && (
                 <Loader2 className="w-4 h-4 animate-spin" />
               )}
-              Save Changes
+              {t("common.saveChanges")}
             </Button>
           </div>
         </form>
@@ -216,10 +218,10 @@ export default function ProfilePage() {
           >
             <h3 className="font-semibold text-zinc-900 flex items-center gap-2">
               <Lock className="w-4 h-4" />
-              Change Password
+              {t("profile.changePassword.title")}
             </h3>
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
+              <Label htmlFor="currentPassword">{t("profile.changePassword.currentPassword")}</Label>
               <Input
                 id="currentPassword"
                 type="password"
@@ -233,7 +235,7 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
+              <Label htmlFor="newPassword">{t("profile.changePassword.newPassword")}</Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -247,7 +249,7 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Label htmlFor="confirmPassword">{t("profile.changePassword.confirmPassword")}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -265,23 +267,23 @@ export default function ProfilePage() {
                 {changePassword.isPending && (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 )}
-                Update Password
+                {t("profile.changePassword.updatePassword")}
               </Button>
             </div>
           </form>
 
           {/* Sign out */}
           <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
-            <h3 className="font-semibold text-zinc-900 mb-2">Sign Out</h3>
+            <h3 className="font-semibold text-zinc-900 mb-2">{t("profile.signOut.title")}</h3>
             <p className="text-sm text-zinc-500 mb-4">
-              Sign out of your account on this device.
+              {t("profile.signOut.description")}
             </p>
             <Button
               variant="destructive"
               onClick={() => signOut({ callbackUrl: "/login" })}
             >
               <LogOut className="w-4 h-4" />
-              Sign Out
+              {t("auth.signOut")}
             </Button>
           </div>
         </div>

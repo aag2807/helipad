@@ -1,10 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { Calendar, Clock, MapPin, MoreVertical, X, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface BookingCardProps {
   booking: {
@@ -26,6 +28,8 @@ export function BookingCard({
   onCancel,
   isPast = false,
 }: BookingCardProps) {
+  const { t, locale } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
   const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
   const isCancelled = booking.status === "cancelled";
@@ -54,10 +58,10 @@ export function BookingCard({
                   : "success"
               }
             >
-              {isCancelled ? "Cancelled" : isPast ? "Completed" : "Confirmed"}
+              {isCancelled ? t("bookingStatus.cancelled") : isPast ? t("bookingStatus.completed") : t("bookingStatus.confirmed")}
             </Badge>
             <span className="text-xs text-zinc-500">
-              {format(startTime, "EEEE, MMM d, yyyy")}
+              {format(startTime, "EEEE, MMM d, yyyy", { locale: dateLocale })}
             </span>
           </div>
 

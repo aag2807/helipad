@@ -6,6 +6,7 @@ import { Plus, Wifi, WifiOff } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useSSE } from "@/hooks/use-sse";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { CalendarHeader } from "@/components/calendar/calendar-header";
@@ -38,10 +39,12 @@ export default function CalendarPage() {
   const calendar = useCalendar("week");
   const currentUserId = session?.user?.id ?? "";
   const isAdmin = session?.user?.role === "admin";
+  const { t } = useTranslations();
 
   // Dialog state
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [initialSlot, setInitialSlot] = useState<{
     date: Date;
     hour: number;
@@ -60,8 +63,8 @@ export default function CalendarPage() {
       if (data.userId !== currentUserId) {
         toast({
           type: "info",
-          title: "New booking",
-          description: "Someone just made a booking. Calendar updated.",
+          title: t("notifications.newBooking"),
+          description: t("notifications.someoneBooked"),
         });
       }
     },
@@ -69,8 +72,8 @@ export default function CalendarPage() {
       if (data.userId !== currentUserId) {
         toast({
           type: "info",
-          title: "Booking cancelled",
-          description: "A booking was cancelled. Calendar updated.",
+          title: t("notifications.bookingCancelled"),
+          description: t("notifications.bookingCancelledByOther"),
         });
       }
     },
@@ -86,14 +89,14 @@ export default function CalendarPage() {
       setInitialSlot(null);
       toast({
         type: "success",
-        title: "Booking confirmed!",
-        description: "Your helipad slot has been reserved.",
+        title: t("notifications.bookingConfirmed"),
+        description: t("notifications.bookingConfirmedDescription"),
       });
     },
     onError: (error) => {
       toast({
         type: "error",
-        title: "Booking failed",
+        title: t("notifications.bookingFailed"),
         description: error.message,
       });
     },
@@ -105,14 +108,34 @@ export default function CalendarPage() {
       setSelectedBooking(null);
       toast({
         type: "success",
-        title: "Booking cancelled",
-        description: "Your booking has been cancelled.",
+        title: t("notifications.bookingCancelled"),
+        description: t("notifications.bookingCancelledDescription"),
       });
     },
     onError: (error) => {
       toast({
         type: "error",
-        title: "Cancellation failed",
+        title: t("notifications.cancellationFailed"),
+        description: error.message,
+      });
+    },
+  });
+
+  const updateBooking = trpc.bookings.update.useMutation({
+    onSuccess: () => {
+      utils.bookings.getByDateRange.invalidate();
+      setIsBookingFormOpen(false);
+      setEditingBooking(null);
+      toast({
+        type: "success",
+        title: t("notifications.bookingUpdated"),
+        description: t("notifications.bookingUpdatedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("notifications.updateFailed"),
         description: error.message,
       });
     },
@@ -121,6 +144,7 @@ export default function CalendarPage() {
   // Handlers
   const handleSlotClick = useCallback((date: Date, hour: number, minute: number) => {
     setInitialSlot({ date, hour, minute });
+    setEditingBooking(null);
     setIsBookingFormOpen(true);
   }, []);
 
@@ -140,7 +164,18 @@ export default function CalendarPage() {
     notes?: string;
     contactPhone?: string;
   }) => {
-    createBooking.mutate(data);
+    if (editingBooking) {
+      updateBooking.mutate({
+        id: editingBooking.id,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        purpose: data.purpose,
+        notes: data.notes,
+        contactPhone: data.contactPhone,
+      });
+    } else {
+      createBooking.mutate(data);
+    }
   };
 
   const handleBookingCancel = () => {
@@ -151,7 +186,16 @@ export default function CalendarPage() {
 
   const handleNewBooking = () => {
     setInitialSlot(null);
+    setEditingBooking(null);
     setIsBookingFormOpen(true);
+  };
+
+  const handleEditBooking = () => {
+    if (selectedBooking) {
+      setEditingBooking(selectedBooking);
+      setSelectedBooking(null);
+      setIsBookingFormOpen(true);
+    }
   };
 
   // Transform bookings data
@@ -167,14 +211,14 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Booking Calendar</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">{t("calendarPage.title")}</h1>
           <p className="text-zinc-500 mt-1">
-            View and book available helipad time slots
+            {t("calendarPage.description")}
           </p>
         </div>
         <Button onClick={handleNewBooking}>
           <Plus className="w-4 h-4" />
-          New Booking
+          {t("calendarPage.newBooking")}
         </Button>
       </div>
 
@@ -229,27 +273,31 @@ export default function CalendarPage() {
       <div className="flex items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-violet-100 border border-violet-300" />
-          <span className="text-zinc-600">My Bookings</span>
+          <span className="text-zinc-600">{t("calendarPage.legend.myBookings")}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-zinc-100 border border-zinc-300" />
-          <span className="text-zinc-600">Other Bookings</span>
+          <span className="text-zinc-600">{t("calendarPage.legend.otherBookings")}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-emerald-50 border border-emerald-200" />
-          <span className="text-zinc-600">Available</span>
+          <span className="text-zinc-600">{t("calendarPage.legend.available")}</span>
         </div>
       </div>
 
       {/* Booking Form Dialog */}
       <BookingForm
         open={isBookingFormOpen}
-        onOpenChange={setIsBookingFormOpen}
+        onOpenChange={(open) => {
+          setIsBookingFormOpen(open);
+          if (!open) setEditingBooking(null);
+        }}
         onSubmit={handleBookingSubmit}
-        isLoading={createBooking.isPending}
+        isLoading={createBooking.isPending || updateBooking.isPending}
         initialDate={initialSlot?.date}
         initialHour={initialSlot?.hour}
         initialMinute={initialSlot?.minute}
+        editingBooking={editingBooking}
       />
 
       {/* Booking Details Dialog */}
@@ -258,10 +306,7 @@ export default function CalendarPage() {
         open={!!selectedBooking}
         onOpenChange={(open) => !open && setSelectedBooking(null)}
         onCancel={handleBookingCancel}
-        onEdit={() => {
-          // TODO: Implement edit - for now, just close and user can cancel + rebook
-          setSelectedBooking(null);
-        }}
+        onEdit={handleEditBooking}
         isOwner={selectedBooking?.userId === currentUserId}
         isAdmin={isAdmin}
         isCancelling={cancelBooking.isPending}

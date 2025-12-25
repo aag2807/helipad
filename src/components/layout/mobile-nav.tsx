@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Calendar, ListOrdered, User, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface MobileNavProps {
   isAdmin: boolean;
@@ -12,14 +13,15 @@ interface MobileNavProps {
 
 export function MobileNav({ isAdmin }: MobileNavProps) {
   const pathname = usePathname();
+  const { t } = useTranslations();
 
   const navItems = [
-    { label: "Calendar", href: ROUTES.calendar, icon: Calendar },
-    { label: "Bookings", href: ROUTES.myBookings, icon: ListOrdered },
+    { label: t("navigation.calendar"), href: ROUTES.calendar, icon: Calendar },
+    { label: t("navigation.bookings"), href: ROUTES.myBookings, icon: ListOrdered },
     ...(isAdmin
-      ? [{ label: "Admin", href: ROUTES.adminDashboard, icon: LayoutDashboard }]
+      ? [{ label: t("navigation.admin"), href: ROUTES.adminDashboard, icon: LayoutDashboard }]
       : []),
-    { label: "Profile", href: "/profile", icon: User },
+    { label: t("navigation.profile"), href: "/profile", icon: User },
   ];
 
   return (

@@ -1,0 +1,426 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "saveChanges": "Save Changes",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "refresh": "Refresh",
+    "clear": "Clear",
+    "clearAll": "Clear all",
+    "clearSelection": "Clear selection",
+    "search": "Search",
+    "filters": "Filters",
+    "exportCSV": "Export CSV",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "add": "Add",
+    "remove": "Remove",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "noResults": "No results found",
+    "selected": "selected",
+    "selectedPlural": "selected",
+    "showing": "Showing",
+    "of": "of",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInToManage": "Sign in to manage your bookings",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "signOut": "Sign out",
+    "username": "Username",
+    "enterUsername": "Enter your username",
+    "password": "Password",
+    "enterPassword": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "unexpectedError": "An unexpected error occurred",
+    "demoCredentials": "Demo credentials:",
+    "invalidCredentials": "Invalid username or password"
+  },
+
+  "forgotPassword": {
+    "title": "Forgot password?",
+    "description": "No worries, we'll send you reset instructions.",
+    "emailAddress": "Email address",
+    "enterEmail": "Enter your email",
+    "sendResetLink": "Send Reset Link",
+    "sending": "Sending...",
+    "backToLogin": "Back to login",
+    "checkEmail": "Check your email",
+    "emailSentDescription": "If an account exists for {email}, we've sent instructions to reset your password.",
+    "linkExpiry": "The link will expire in 1 hour. Don't forget to check your spam folder."
+  },
+
+  "resetPassword": {
+    "title": "Set New Password",
+    "description": "Hi {firstName}, choose a new password for your account.",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmNewPassword": "Confirm new password",
+    "resetPassword": "Reset Password",
+    "resetting": "Resetting...",
+    "passwordReset": "Password Reset!",
+    "passwordResetSuccess": "Your password has been successfully reset. You can now log in with your new password.",
+    "goToLogin": "Go to Login",
+    "invalidOrExpiredLink": "Invalid or Expired Link",
+    "invalidLinkDescription": "This password reset link is invalid or has expired. Please request a new one.",
+    "requestNewLink": "Request New Link",
+    "validatingLink": "Validating reset link...",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordsDontMatch": "Passwords do not match"
+  },
+
+  "navigation": {
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "myBookings": "My Bookings",
+    "administration": "Administration",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "allBookings": "All Bookings",
+    "settings": "Settings",
+    "profile": "Profile",
+    "admin": "Admin"
+  },
+
+  "roles": {
+    "admin": "Admin",
+    "user": "User"
+  },
+
+  "calendar": {
+    "today": "Today",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "booked": "Booked",
+    "more": "more"
+  },
+
+  "calendarPage": {
+    "title": "Booking Calendar",
+    "description": "View and book available helipad time slots",
+    "newBooking": "New Booking",
+    "legend": {
+      "myBookings": "My Bookings",
+      "otherBookings": "Other Bookings",
+      "available": "Available"
+    }
+  },
+
+  "weekDays": {
+    "short": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "full": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    }
+  },
+
+  "bookings": {
+    "bookHelipad": "Book Helipad",
+    "selectTimeSlot": "Select your preferred time slot and provide booking details.",
+    "date": "Date",
+    "startTime": "Start Time",
+    "duration": "Duration",
+    "purpose": "Purpose",
+    "purposePlaceholder": "e.g., Medical transport, VIP arrival",
+    "notes": "Notes",
+    "notesOptional": "Notes (optional)",
+    "notesPlaceholder": "Any special requirements or notes...",
+    "contactPhone": "Contact Phone",
+    "contactPhoneOptional": "Contact Phone (optional)",
+    "bookNow": "Book Now",
+    "editBooking": "Edit Booking",
+    "updateBooking": "Update Booking",
+    "updateTimeSlot": "Modify the booking details below.",
+    "bookingEndsAt": "Booking ends at",
+    "durations": {
+      "15min": "15 minutes",
+      "30min": "30 minutes",
+      "45min": "45 minutes",
+      "1hour": "1 hour",
+      "1_5hours": "1.5 hours",
+      "2hours": "2 hours",
+      "3hours": "3 hours",
+      "4hours": "4 hours"
+    }
+  },
+
+  "bookingDetails": {
+    "title": "Booking Details",
+    "date": "Date",
+    "time": "Time",
+    "bookedBy": "Booked by",
+    "purpose": "Purpose",
+    "notes": "Notes",
+    "contact": "Contact",
+    "cancelBooking": "Cancel Booking",
+    "bookingPassed": "This booking has already passed"
+  },
+
+  "bookingStatus": {
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "pending": "Pending"
+  },
+
+  "myBookings": {
+    "title": "My Bookings",
+    "description": "View and manage your helipad reservations",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "noUpcoming": "No upcoming bookings",
+    "noPast": "No past bookings",
+    "bookFirstSlot": "Book your first helipad slot to get started.",
+    "completedBookingsHere": "Your completed bookings will appear here."
+  },
+
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "description": "Overview of your helipad booking system",
+    "todaysBookings": "Today's Bookings",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "upcoming7Days": "Upcoming (7 days)",
+    "totalUsers": "Total Users",
+    "activeUsers": "active",
+    "allTimeBookings": "All-Time Bookings",
+    "cancelledMonth": "Cancelled (Month)",
+    "topBookersMonth": "Top Bookers (Month)",
+    "noBookingsMonth": "No bookings this month",
+    "popularTimeSlotsMonth": "Popular Time Slots (Month)",
+    "bookingsCount": "bookings"
+  },
+
+  "adminUsers": {
+    "title": "User Management",
+    "description": "Manage users and their permissions",
+    "addUser": "Add User",
+    "searchUsers": "Search users...",
+    "allRoles": "All Roles",
+    "allStatus": "All Status",
+    "showingOf": "Showing {count} of {total} users",
+    "noUsersFound": "No users found",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "tableHeaders": {
+      "user": "User",
+      "username": "Username",
+      "role": "Role",
+      "status": "Status",
+      "created": "Created"
+    }
+  },
+
+  "userForm": {
+    "createTitle": "Create New User",
+    "editTitle": "Edit User",
+    "createDescription": "Fill in the details to create a new user account.",
+    "editDescription": "Update the user's information below.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "passwordKeepCurrent": "Password (leave blank to keep current)",
+    "role": "Role",
+    "status": "Status",
+    "createUser": "Create User",
+    "updateUser": "Update User",
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "username": "johndoe",
+      "email": "john@example.com",
+      "passwordNew": "Min. 8 characters",
+      "passwordEdit": "••••••••"
+    }
+  },
+
+  "deleteUserDialog": {
+    "title": "Delete User",
+    "description": "This action cannot be undone. This will permanently delete the user account and all associated data.",
+    "aboutToDelete": "You are about to delete",
+    "bookingsWillBeDeleted": "All bookings associated with this user will also be deleted.",
+    "deleteUser": "Delete User"
+  },
+
+  "adminBookings": {
+    "title": "All Bookings",
+    "description": "View and manage all helipad bookings",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "status": "Status",
+    "bookingsFound": "{count} booking found",
+    "bookingsFoundPlural": "{count} bookings found",
+    "noBookingsFound": "No bookings found",
+    "tableHeaders": {
+      "user": "User",
+      "date": "Date",
+      "time": "Time",
+      "purpose": "Purpose",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "unknown": "Unknown",
+    "bookingCancelled": "Booking cancelled",
+    "bookingCancelledDescription": "The booking has been cancelled.",
+    "exportComplete": "Export complete",
+    "exportedBookings": "Exported {count} bookings to CSV."
+  },
+
+  "adminSettings": {
+    "title": "System Settings",
+    "description": "Configure helipad booking system settings",
+    "operationalHours": {
+      "title": "Operational Hours",
+      "description": "Set when the helipad is available for booking",
+      "openingTime": "Opening Time",
+      "closingTime": "Closing Time",
+      "timeSlotDuration": "Time Slot Duration",
+      "maxBookingDuration": "Max Booking Duration",
+      "minAdvanceNotice": "Min. Advance Notice"
+    },
+    "blackoutDates": {
+      "title": "Blackout Dates",
+      "description": "Days when the helipad is unavailable",
+      "addDate": "Add Date",
+      "noBlackoutDates": "No blackout dates configured"
+    },
+    "emailNotifications": {
+      "title": "Email Notifications",
+      "description": "Configure automated email settings",
+      "confirmations": {
+        "title": "Booking Confirmations",
+        "description": "Send email when a booking is created"
+      },
+      "reminders": {
+        "title": "Booking Reminders",
+        "description": "Send reminder before booking time"
+      },
+      "adminNotifications": {
+        "title": "Admin Notifications",
+        "description": "Notify admins of new bookings and cancellations"
+      },
+      "reminderTiming": {
+        "1hour": "1 hour",
+        "2hours": "2 hours",
+        "12hours": "12 hours",
+        "24hours": "24 hours",
+        "48hours": "48 hours"
+      }
+    },
+    "durations": {
+      "none": "None",
+      "15min": "15 minutes",
+      "30min": "30 minutes",
+      "1hour": "1 hour",
+      "2hours": "2 hours",
+      "3hours": "3 hours",
+      "4hours": "4 hours",
+      "8hours": "8 hours",
+      "24hours": "24 hours"
+    },
+    "settingsSaved": "Settings saved",
+    "settingsSavedDescription": "Your changes have been saved successfully.",
+    "blackoutDateAdded": "Blackout date added",
+    "blackoutDateRemoved": "Blackout date removed"
+  },
+
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your account settings",
+    "tabs": {
+      "profile": "Profile",
+      "security": "Security"
+    },
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "profileUpdated": "Profile updated",
+    "changePassword": {
+      "title": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "updatePassword": "Update Password",
+      "passwordChanged": "Password changed successfully"
+    },
+    "signOut": {
+      "title": "Sign Out",
+      "description": "Sign out of your account on this device."
+    }
+  },
+
+  "validations": {
+    "required": "{field} is required",
+    "dateRequired": "Date is required",
+    "startTimeRequired": "Start time is required",
+    "minDuration": "Minimum 15 minutes",
+    "maxDuration": "Maximum 4 hours",
+    "purposeRequired": "Purpose is required",
+    "invalidEmail": "Invalid email",
+    "usernameMin": "Username must be at least 3 characters",
+    "usernameMax": "Username must be less than 50 characters",
+    "usernameFormat": "Username can only contain letters, numbers, and underscores",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordsDontMatch": "Passwords don't match",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "currentPasswordRequired": "Current password is required"
+  },
+
+  "notifications": {
+    "bookingConfirmed": "Booking confirmed!",
+    "bookingConfirmedDescription": "Your helipad slot has been reserved.",
+    "bookingFailed": "Booking failed",
+    "bookingCancelled": "Booking cancelled",
+    "bookingCancelledDescription": "Your booking has been cancelled.",
+    "cancellationFailed": "Cancellation failed",
+    "bookingUpdated": "Booking updated!",
+    "bookingUpdatedDescription": "Your booking has been successfully updated.",
+    "updateFailed": "Update failed",
+    "newBooking": "New booking",
+    "someoneBooked": "Someone just made a booking. Calendar updated.",
+    "bookingCancelledByOther": "A booking was cancelled. Calendar updated."
+  },
+
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "networkError": "Network error. Please check your connection.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "unauthorized": "You don't have permission to perform this action.",
+    "notFound": "The requested resource was not found."
+  }
+}
+

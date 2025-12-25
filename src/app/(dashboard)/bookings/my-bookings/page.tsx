@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Calendar, History, Plus, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Pagination } from "@/components/ui/pagination";
 import { BookingCard } from "@/components/bookings/booking-card";
 import { BookingForm } from "@/components/bookings/booking-form";
 import { BookingDetails } from "@/components/bookings/booking-details";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 interface Booking {
@@ -29,7 +31,9 @@ export default function MyBookingsPage() {
   const [page, setPage] = useState(1);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const { t } = useTranslations();
 
   // Query bookings
   const { data, isLoading } = trpc.bookings.getMyBookings.useQuery({
@@ -56,6 +60,26 @@ export default function MyBookingsPage() {
     },
   });
 
+  const updateBooking = trpc.bookings.update.useMutation({
+    onSuccess: () => {
+      utils.bookings.getMyBookings.invalidate();
+      setIsBookingFormOpen(false);
+      setEditingBooking(null);
+      toast({
+        type: "success",
+        title: t("notifications.bookingUpdated"),
+        description: t("notifications.bookingUpdatedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("notifications.updateFailed"),
+        description: error.message,
+      });
+    },
+  });
+
   const handleTabChange = (tab: "upcoming" | "past") => {
     setActiveTab(tab);
     setPage(1);
@@ -73,7 +97,26 @@ export default function MyBookingsPage() {
     notes?: string;
     contactPhone?: string;
   }) => {
-    createBooking.mutate(data);
+    if (editingBooking) {
+      updateBooking.mutate({
+        id: editingBooking.id,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        purpose: data.purpose,
+        notes: data.notes,
+        contactPhone: data.contactPhone,
+      });
+    } else {
+      createBooking.mutate(data);
+    }
+  };
+
+  const handleEditBooking = () => {
+    if (selectedBooking) {
+      setEditingBooking(selectedBooking);
+      setSelectedBooking(null);
+      setIsBookingFormOpen(true);
+    }
   };
 
   const bookings = data?.bookings ?? [];
@@ -90,14 +133,17 @@ export default function MyBookingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">My Bookings</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">{t("myBookings.title")}</h1>
           <p className="text-zinc-500 mt-1">
-            View and manage your helipad reservations
+            {t("myBookings.description")}
           </p>
         </div>
-        <Button onClick={() => setIsBookingFormOpen(true)}>
+        <Button onClick={() => {
+          setEditingBooking(null);
+          setIsBookingFormOpen(true);
+        }}>
           <Plus className="w-4 h-4" />
-          New Booking
+          {t("calendarPage.newBooking")}
         </Button>
       </div>
 
@@ -113,7 +159,7 @@ export default function MyBookingsPage() {
           )}
         >
           <Calendar className="w-4 h-4" />
-          Upcoming
+          {t("myBookings.upcoming")}
         </button>
         <button
           onClick={() => handleTabChange("past")}
@@ -125,7 +171,7 @@ export default function MyBookingsPage() {
           )}
         >
           <History className="w-4 h-4" />
-          Past
+          {t("myBookings.past")}
         </button>
       </div>
 
@@ -145,18 +191,21 @@ export default function MyBookingsPage() {
           </div>
           <h2 className="text-lg font-semibold text-zinc-900 mb-1">
             {activeTab === "upcoming"
-              ? "No upcoming bookings"
-              : "No past bookings"}
+              ? t("myBookings.noUpcoming")
+              : t("myBookings.noPast")}
           </h2>
           <p className="text-zinc-500 mb-6">
             {activeTab === "upcoming"
-              ? "Book your first helipad slot to get started."
-              : "Your completed bookings will appear here."}
+              ? t("myBookings.bookFirstSlot")
+              : t("myBookings.completedBookingsHere")}
           </p>
           {activeTab === "upcoming" && (
-            <Button onClick={() => setIsBookingFormOpen(true)}>
+            <Button onClick={() => {
+              setEditingBooking(null);
+              setIsBookingFormOpen(true);
+            }}>
               <Plus className="w-4 h-4" />
-              Book Now
+              {t("bookings.bookNow")}
             </Button>
           )}
         </div>
@@ -204,9 +253,13 @@ export default function MyBookingsPage() {
       {/* Booking Form Dialog */}
       <BookingForm
         open={isBookingFormOpen}
-        onOpenChange={setIsBookingFormOpen}
+        onOpenChange={(open) => {
+          setIsBookingFormOpen(open);
+          if (!open) setEditingBooking(null);
+        }}
         onSubmit={handleBookingSubmit}
-        isLoading={createBooking.isPending}
+        isLoading={createBooking.isPending || updateBooking.isPending}
+        editingBooking={editingBooking}
       />
 
       {/* Booking Details Dialog */}
@@ -230,7 +283,7 @@ export default function MyBookingsPage() {
         onCancel={() =>
           selectedBooking && handleCancel(selectedBooking.id)
         }
-        onEdit={() => setSelectedBooking(null)}
+        onEdit={handleEditBooking}
         isOwner={true}
         isAdmin={session?.user?.role === "admin"}
         isCancelling={cancellingId === selectedBooking?.id}

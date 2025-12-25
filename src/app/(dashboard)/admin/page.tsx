@@ -11,11 +11,13 @@ import {
   Trophy 
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Spinner } from "@/components/ui/spinner";
 import { StatCard } from "@/components/admin/stat-card";
 import { MiniChart } from "@/components/admin/mini-chart";
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslations();
   const { data: stats, isLoading: statsLoading } = trpc.stats.getOverview.useQuery();
   const { data: trends, isLoading: trendsLoading } = trpc.stats.getBookingTrends.useQuery();
   const { data: topUsers, isLoading: topUsersLoading } = trpc.stats.getTopUsers.useQuery();
@@ -35,34 +37,34 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">{t("adminDashboard.title")}</h1>
         <p className="text-zinc-500 mt-1">
-          Overview of your helipad booking system
+          {t("adminDashboard.description")}
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Today's Bookings"
+          title={t("adminDashboard.todaysBookings")}
           value={stats?.todayBookings ?? 0}
           icon={Calendar}
           color="violet"
         />
         <StatCard
-          title="This Week"
+          title={t("adminDashboard.thisWeek")}
           value={stats?.weekBookings ?? 0}
           icon={CalendarCheck}
           color="emerald"
         />
         <StatCard
-          title="This Month"
+          title={t("adminDashboard.thisMonth")}
           value={stats?.monthBookings ?? 0}
           icon={TrendingUp}
           color="sky"
         />
         <StatCard
-          title="Upcoming (7 days)"
+          title={t("adminDashboard.upcoming7Days")}
           value={stats?.upcomingBookings ?? 0}
           icon={Clock}
           color="amber"
@@ -72,20 +74,20 @@ export default function AdminDashboardPage() {
       {/* Secondary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title="Total Users"
+          title={t("adminDashboard.totalUsers")}
           value={stats?.totalUsers ?? 0}
           icon={Users}
-          description={`${stats?.activeUsers ?? 0} active`}
+          description={`${stats?.activeUsers ?? 0} ${t("adminDashboard.activeUsers")}`}
           color="violet"
         />
         <StatCard
-          title="All-Time Bookings"
+          title={t("adminDashboard.allTimeBookings")}
           value={stats?.totalBookings ?? 0}
           icon={BarChart3}
           color="emerald"
         />
         <StatCard
-          title="Cancelled (Month)"
+          title={t("adminDashboard.cancelledMonth")}
           value={stats?.cancelledThisMonth ?? 0}
           icon={XCircle}
           color="rose"
@@ -103,7 +105,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-5 h-5 text-amber-500" />
-            <h3 className="text-sm font-medium text-zinc-500">Top Bookers (Month)</h3>
+            <h3 className="text-sm font-medium text-zinc-500">{t("adminDashboard.topBookersMonth")}</h3>
           </div>
           
           {topUsers && topUsers.length > 0 ? (
@@ -132,7 +134,7 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <p className="text-sm text-zinc-500 text-center py-4">
-              No bookings this month
+              {t("adminDashboard.noBookingsMonth")}
             </p>
           )}
         </div>
@@ -142,7 +144,7 @@ export default function AdminDashboardPage() {
       <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <Clock className="w-5 h-5 text-violet-500" />
-          <h3 className="text-sm font-medium text-zinc-500">Popular Time Slots (Month)</h3>
+          <h3 className="text-sm font-medium text-zinc-500">{t("adminDashboard.popularTimeSlotsMonth")}</h3>
         </div>
 
         {popularSlots && popularSlots.length > 0 ? (
@@ -158,13 +160,13 @@ export default function AdminDashboardPage() {
               >
                 {slot.label}
                 <span className="ml-2 text-xs opacity-70">
-                  ({slot.count} bookings)
+                  ({slot.count} {t("adminDashboard.bookingsCount")})
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">No bookings this month</p>
+          <p className="text-sm text-zinc-500">{t("adminDashboard.noBookingsMonth")}</p>
         )}
       </div>
     </div>

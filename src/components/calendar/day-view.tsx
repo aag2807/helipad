@@ -2,8 +2,10 @@
 
 import { useMemo } from "react";
 import { format, isBefore, isWithinInterval } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { generateTimeSlots, getSlotDateTime } from "@/hooks/use-calendar";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Booking {
   id: string;
@@ -38,6 +40,9 @@ export function DayView({
   onSlotClick,
   onBookingClick,
 }: DayViewProps) {
+  const { t, locale } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
+
   const timeSlots = useMemo(
     () => generateTimeSlots(startHour, endHour, 30),
     [startHour, endHour]
@@ -67,7 +72,7 @@ export function DayView({
       {/* Header */}
       <div className="p-4 bg-violet-50 border-b border-violet-100">
         <h3 className="font-semibold text-violet-900">
-          {format(date, "EEEE, MMMM d, yyyy")}
+          {format(date, "EEEE, MMMM d, yyyy", { locale: dateLocale })}
         </h3>
       </div>
 
@@ -146,7 +151,7 @@ export function DayView({
                       <div className="font-semibold">
                         {booking.user
                           ? `${booking.user.firstName} ${booking.user.lastName}`
-                          : "Booked"}
+                          : t("calendar.booked")}
                       </div>
                       <div className="text-sm opacity-75 mt-1">
                         {format(bookingStart, "h:mm a")} -{" "}
