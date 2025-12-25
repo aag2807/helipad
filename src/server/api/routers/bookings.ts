@@ -1,0 +1,454 @@
+import { z } from "zod";
+import { format } from "date-fns";
+import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
+import { bookings, users } from "@/server/db/schema";
+import { eq, and, gte, lte, lt, gt, desc, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
+import { broadcastBookingCreated, broadcastBookingCancelled } from "@/server/services/sse";
+import { sendBookingConfirmation, sendBookingCancellation } from "@/server/services/email";
+
+export const bookingsRouter = createTRPCRouter({
+  /**
+   * Get bookings for a date range (calendar view)
+   */
+  getByDateRange: protectedProcedure
+    .input(
+      z.object({
+        startDate: z.string().datetime(),
+        endDate: z.string().datetime(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const start = new Date(input.startDate);
+      const end = new Date(input.endDate);
+
+      const bookingsList = await ctx.db
+        .select({
+          id: bookings.id,
+          userId: bookings.userId,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
+          purpose: bookings.purpose,
+          status: bookings.status,
+          user: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          },
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .where(
+          and(
+            eq(bookings.status, "confirmed"),
+            gte(bookings.startTime, start),
+            lte(bookings.endTime, end)
+          )
+        )
+        .orderBy(bookings.startTime);
+
+      return bookingsList;
+    }),
+
+  /**
+   * Get user's own bookings
+   */
+  getMyBookings: protectedProcedure
+    .input(
+      z.object({
+        upcoming: z.boolean().default(true),
+        page: z.number().min(1).default(1),
+        limit: z.number().min(1).max(50).default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { upcoming, page, limit } = input;
+      const offset = (page - 1) * limit;
+      const now = new Date();
+
+      const whereClause = and(
+        eq(bookings.userId, ctx.session.user.id),
+        upcoming
+          ? and(gte(bookings.endTime, now), eq(bookings.status, "confirmed"))
+          : lt(bookings.endTime, now)
+      );
+
+      const [{ count }] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(bookings)
+        .where(whereClause);
+
+      const bookingsList = await ctx.db
+        .select()
+        .from(bookings)
+        .where(whereClause)
+        .orderBy(upcoming ? bookings.startTime : desc(bookings.startTime))
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        bookings: bookingsList,
+        pagination: {
+          total: count,
+          page,
+          limit,
+          totalPages: Math.ceil(count / limit),
+        },
+      };
+    }),
+
+  /**
+   * Get single booking by ID
+   */
+  getById: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const booking = await ctx.db.query.bookings.findFirst({
+        where: eq(bookings.id, input.id),
+        with: {
+          user: {
+            columns: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!booking) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+      }
+
+      // Only allow viewing if admin or own booking
+      if (ctx.session.user.role !== "admin" && booking.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      return booking;
+    }),
+
+  /**
+   * Create a new booking
+   */
+  create: protectedProcedure
+    .input(
+      z.object({
+        startTime: z.string().datetime(),
+        endTime: z.string().datetime(),
+        purpose: z.string().min(1).max(500),
+        notes: z.string().max(1000).optional(),
+        contactPhone: z.string().max(20).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const start = new Date(input.startTime);
+      const end = new Date(input.endTime);
+
+      // Validate time range
+      if (start >= end) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "End time must be after start time",
+        });
+      }
+
+      // Allow same-day bookings (only block if the date is before today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const bookingDate = new Date(start);
+      bookingDate.setHours(0, 0, 0, 0);
+      
+      if (bookingDate < today) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot book time slots for past dates",
+        });
+      }
+
+      // Check for conflicts
+      const conflicts = await ctx.db
+        .select({ id: bookings.id })
+        .from(bookings)
+        .where(
+          and(
+            eq(bookings.status, "confirmed"),
+            lt(bookings.startTime, end),
+            gt(bookings.endTime, start)
+          )
+        );
+
+      if (conflicts.length > 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This time slot conflicts with an existing booking",
+        });
+      }
+
+      const [newBooking] = await ctx.db
+        .insert(bookings)
+        .values({
+          userId: ctx.session.user.id,
+          startTime: start,
+          endTime: end,
+          purpose: input.purpose,
+          notes: input.notes,
+          contactPhone: input.contactPhone,
+        })
+        .returning();
+
+      // Broadcast SSE event for real-time updates
+      broadcastBookingCreated({
+        id: newBooking.id,
+        userId: newBooking.userId,
+        startTime: start,
+        endTime: end,
+      });
+
+      // Send confirmation email (async, don't block response)
+      sendBookingConfirmation({
+        userName: `${ctx.session.user.firstName} ${ctx.session.user.lastName}`,
+        userEmail: ctx.session.user.email ?? "",
+        userId: ctx.session.user.id,
+        bookingId: newBooking.id,
+        date: format(start, "EEEE, MMMM d, yyyy"),
+        startTime: format(start, "h:mm a"),
+        endTime: format(end, "h:mm a"),
+        purpose: input.purpose,
+      }).catch((err) => console.error("Failed to send confirmation email:", err));
+
+      return newBooking;
+    }),
+
+  /**
+   * Update own booking
+   */
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        startTime: z.string().datetime().optional(),
+        endTime: z.string().datetime().optional(),
+        purpose: z.string().min(1).max(500).optional(),
+        notes: z.string().max(1000).optional(),
+        contactPhone: z.string().max(20).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updateData } = input;
+
+      const existing = await ctx.db.query.bookings.findFirst({
+        where: eq(bookings.id, id),
+      });
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+      }
+
+      // Only owner can update (unless admin)
+      if (ctx.session.user.role !== "admin" && existing.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      // Check if booking is in the past
+      if (existing.startTime < new Date()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot modify past bookings",
+        });
+      }
+
+      // If times are being updated, check for conflicts
+      if (updateData.startTime || updateData.endTime) {
+        const start = updateData.startTime ? new Date(updateData.startTime) : existing.startTime;
+        const end = updateData.endTime ? new Date(updateData.endTime) : existing.endTime;
+
+        if (start >= end) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "End time must be after start time",
+          });
+        }
+
+        const conflicts = await ctx.db
+          .select({ id: bookings.id })
+          .from(bookings)
+          .where(
+            and(
+              eq(bookings.status, "confirmed"),
+              sql`${bookings.id} != ${id}`,
+              lt(bookings.startTime, end),
+              gt(bookings.endTime, start)
+            )
+          );
+
+        if (conflicts.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This time slot conflicts with an existing booking",
+          });
+        }
+      }
+
+      const [updated] = await ctx.db
+        .update(bookings)
+        .set({
+          ...updateData,
+          startTime: updateData.startTime ? new Date(updateData.startTime) : undefined,
+          endTime: updateData.endTime ? new Date(updateData.endTime) : undefined,
+          updatedAt: new Date(),
+        })
+        .where(eq(bookings.id, id))
+        .returning();
+
+      return updated;
+    }),
+
+  /**
+   * Cancel own booking
+   */
+  cancel: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.query.bookings.findFirst({
+        where: eq(bookings.id, input.id),
+      });
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+      }
+
+      // Only owner can cancel (unless admin)
+      if (ctx.session.user.role !== "admin" && existing.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      // Check if already cancelled
+      if (existing.status === "cancelled") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Booking is already cancelled",
+        });
+      }
+
+      // Get user info for email
+      const user = await ctx.db.query.users.findFirst({
+        where: eq(users.id, existing.userId),
+        columns: { firstName: true, lastName: true, email: true },
+      });
+
+      const [cancelled] = await ctx.db
+        .update(bookings)
+        .set({
+          status: "cancelled",
+          cancelledAt: new Date(),
+          cancelledBy: ctx.session.user.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(bookings.id, input.id))
+        .returning();
+
+      // Broadcast SSE event for real-time updates
+      broadcastBookingCancelled({
+        id: cancelled.id,
+        userId: cancelled.userId,
+        startTime: existing.startTime,
+        endTime: existing.endTime,
+      });
+
+      // Send cancellation email (async, don't block response)
+      if (user?.email) {
+        sendBookingCancellation({
+          userName: `${user.firstName} ${user.lastName}`,
+          userEmail: user.email,
+          userId: existing.userId,
+          bookingId: cancelled.id,
+          date: format(existing.startTime, "EEEE, MMMM d, yyyy"),
+          startTime: format(existing.startTime, "h:mm a"),
+          endTime: format(existing.endTime, "h:mm a"),
+          purpose: existing.purpose,
+        }).catch((err) => console.error("Failed to send cancellation email:", err));
+      }
+
+      return cancelled;
+    }),
+
+  /**
+   * Admin: List all bookings with filters
+   */
+  listAll: adminProcedure
+    .input(
+      z.object({
+        startDate: z.string().datetime().optional(),
+        endDate: z.string().datetime().optional(),
+        userId: z.string().uuid().optional(),
+        status: z.enum(["confirmed", "cancelled"]).optional(),
+        page: z.number().min(1).default(1),
+        limit: z.number().min(1).max(100).default(20),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { startDate, endDate, userId, status, page, limit } = input;
+      const offset = (page - 1) * limit;
+
+      const conditions = [];
+
+      if (startDate) {
+        conditions.push(gte(bookings.startTime, new Date(startDate)));
+      }
+      if (endDate) {
+        conditions.push(lte(bookings.endTime, new Date(endDate)));
+      }
+      if (userId) {
+        conditions.push(eq(bookings.userId, userId));
+      }
+      if (status) {
+        conditions.push(eq(bookings.status, status));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const [{ count }] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(bookings)
+        .where(whereClause);
+
+      const bookingsList = await ctx.db
+        .select({
+          id: bookings.id,
+          userId: bookings.userId,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
+          purpose: bookings.purpose,
+          notes: bookings.notes,
+          contactPhone: bookings.contactPhone,
+          status: bookings.status,
+          createdAt: bookings.createdAt,
+          cancelledAt: bookings.cancelledAt,
+          user: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email,
+          },
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .where(whereClause)
+        .orderBy(desc(bookings.startTime))
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        bookings: bookingsList,
+        pagination: {
+          total: count,
+          page,
+          limit,
+          totalPages: Math.ceil(count / limit),
+        },
+      };
+    }),
+});
+

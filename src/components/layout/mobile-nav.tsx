@@ -1,0 +1,56 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Calendar, ListOrdered, User, LayoutDashboard } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants";
+
+interface MobileNavProps {
+  isAdmin: boolean;
+}
+
+export function MobileNav({ isAdmin }: MobileNavProps) {
+  const pathname = usePathname();
+
+  const navItems = [
+    { label: "Calendar", href: ROUTES.calendar, icon: Calendar },
+    { label: "Bookings", href: ROUTES.myBookings, icon: ListOrdered },
+    ...(isAdmin
+      ? [{ label: "Admin", href: ROUTES.adminDashboard, icon: LayoutDashboard }]
+      : []),
+    { label: "Profile", href: "/profile", icon: User },
+  ];
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-zinc-200 lg:hidden safe-area-bottom">
+      <div className="flex items-center justify-around h-16">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors",
+                isActive
+                  ? "text-violet-600"
+                  : "text-zinc-400 hover:text-zinc-600"
+              )}
+            >
+              <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5]")} />
+              <span className="text-[10px] font-medium mt-1">{item.label}</span>
+              {isActive && (
+                <div className="absolute bottom-0 w-12 h-0.5 bg-violet-600 rounded-full" />
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+

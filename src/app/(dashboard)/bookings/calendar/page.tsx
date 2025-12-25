@@ -1,0 +1,271 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { Plus, Wifi, WifiOff } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { useCalendar } from "@/hooks/use-calendar";
+import { useSSE } from "@/hooks/use-sse";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { CalendarHeader } from "@/components/calendar/calendar-header";
+import { WeekView } from "@/components/calendar/week-view";
+import { DayView } from "@/components/calendar/day-view";
+import { MonthView } from "@/components/calendar/month-view";
+import { BookingForm } from "@/components/bookings/booking-form";
+import { BookingDetails } from "@/components/bookings/booking-details";
+import { toast } from "@/components/ui/toast";
+
+interface Booking {
+  id: string;
+  userId: string;
+  startTime: Date;
+  endTime: Date;
+  purpose: string;
+  notes?: string | null;
+  contactPhone?: string | null;
+  status: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+  } | null;
+}
+
+export default function CalendarPage() {
+  const { data: session } = useSession();
+  const calendar = useCalendar("week");
+  const currentUserId = session?.user?.id ?? "";
+  const isAdmin = session?.user?.role === "admin";
+
+  // Dialog state
+  const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [initialSlot, setInitialSlot] = useState<{
+    date: Date;
+    hour: number;
+    minute: number;
+  } | null>(null);
+
+  // Query bookings for current date range
+  const { data: bookings, isLoading } = trpc.bookings.getByDateRange.useQuery({
+    startDate: calendar.dateRange.start.toISOString(),
+    endDate: calendar.dateRange.end.toISOString(),
+  });
+
+  // SSE for real-time updates
+  useSSE({
+    onBookingCreated: (data) => {
+      if (data.userId !== currentUserId) {
+        toast({
+          type: "info",
+          title: "New booking",
+          description: "Someone just made a booking. Calendar updated.",
+        });
+      }
+    },
+    onBookingCancelled: (data) => {
+      if (data.userId !== currentUserId) {
+        toast({
+          type: "info",
+          title: "Booking cancelled",
+          description: "A booking was cancelled. Calendar updated.",
+        });
+      }
+    },
+  });
+
+  // Mutations
+  const utils = trpc.useUtils();
+
+  const createBooking = trpc.bookings.create.useMutation({
+    onSuccess: () => {
+      utils.bookings.getByDateRange.invalidate();
+      setIsBookingFormOpen(false);
+      setInitialSlot(null);
+      toast({
+        type: "success",
+        title: "Booking confirmed!",
+        description: "Your helipad slot has been reserved.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: "Booking failed",
+        description: error.message,
+      });
+    },
+  });
+
+  const cancelBooking = trpc.bookings.cancel.useMutation({
+    onSuccess: () => {
+      utils.bookings.getByDateRange.invalidate();
+      setSelectedBooking(null);
+      toast({
+        type: "success",
+        title: "Booking cancelled",
+        description: "Your booking has been cancelled.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: "Cancellation failed",
+        description: error.message,
+      });
+    },
+  });
+
+  // Handlers
+  const handleSlotClick = useCallback((date: Date, hour: number, minute: number) => {
+    setInitialSlot({ date, hour, minute });
+    setIsBookingFormOpen(true);
+  }, []);
+
+  const handleBookingClick = useCallback((booking: Booking) => {
+    setSelectedBooking(booking);
+  }, []);
+
+  const handleDayClick = useCallback((date: Date) => {
+    calendar.goToDate(date);
+    calendar.setView("day");
+  }, [calendar]);
+
+  const handleBookingSubmit = (data: {
+    startTime: string;
+    endTime: string;
+    purpose: string;
+    notes?: string;
+    contactPhone?: string;
+  }) => {
+    createBooking.mutate(data);
+  };
+
+  const handleBookingCancel = () => {
+    if (selectedBooking) {
+      cancelBooking.mutate({ id: selectedBooking.id });
+    }
+  };
+
+  const handleNewBooking = () => {
+    setInitialSlot(null);
+    setIsBookingFormOpen(true);
+  };
+
+  // Transform bookings data
+  const transformedBookings: Booking[] = (bookings ?? []).map((b) => ({
+    ...b,
+    startTime: new Date(b.startTime),
+    endTime: new Date(b.endTime),
+    user: b.user ? { ...b.user, email: undefined } : null,
+  }));
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900">Booking Calendar</h1>
+          <p className="text-zinc-500 mt-1">
+            View and book available helipad time slots
+          </p>
+        </div>
+        <Button onClick={handleNewBooking}>
+          <Plus className="w-4 h-4" />
+          New Booking
+        </Button>
+      </div>
+
+      {/* Calendar Header */}
+      <CalendarHeader
+        title={calendar.getTitle()}
+        view={calendar.view}
+        onViewChange={calendar.setView}
+        onPrevious={calendar.goToPrevious}
+        onNext={calendar.goToNext}
+        onToday={calendar.goToToday}
+      />
+
+      {/* Calendar View */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-24">
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <>
+          {calendar.view === "week" && (
+            <WeekView
+              days={calendar.days}
+              bookings={transformedBookings}
+              currentUserId={currentUserId}
+              onSlotClick={handleSlotClick}
+              onBookingClick={handleBookingClick}
+            />
+          )}
+          {calendar.view === "day" && (
+            <DayView
+              date={calendar.currentDate}
+              bookings={transformedBookings}
+              currentUserId={currentUserId}
+              onSlotClick={handleSlotClick}
+              onBookingClick={handleBookingClick}
+            />
+          )}
+          {calendar.view === "month" && (
+            <MonthView
+              currentDate={calendar.currentDate}
+              bookings={transformedBookings}
+              currentUserId={currentUserId}
+              onDayClick={handleDayClick}
+              onBookingClick={handleBookingClick}
+            />
+          )}
+        </>
+      )}
+
+      {/* Legend */}
+      <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-violet-100 border border-violet-300" />
+          <span className="text-zinc-600">My Bookings</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-zinc-100 border border-zinc-300" />
+          <span className="text-zinc-600">Other Bookings</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-emerald-50 border border-emerald-200" />
+          <span className="text-zinc-600">Available</span>
+        </div>
+      </div>
+
+      {/* Booking Form Dialog */}
+      <BookingForm
+        open={isBookingFormOpen}
+        onOpenChange={setIsBookingFormOpen}
+        onSubmit={handleBookingSubmit}
+        isLoading={createBooking.isPending}
+        initialDate={initialSlot?.date}
+        initialHour={initialSlot?.hour}
+        initialMinute={initialSlot?.minute}
+      />
+
+      {/* Booking Details Dialog */}
+      <BookingDetails
+        booking={selectedBooking}
+        open={!!selectedBooking}
+        onOpenChange={(open) => !open && setSelectedBooking(null)}
+        onCancel={handleBookingCancel}
+        onEdit={() => {
+          // TODO: Implement edit - for now, just close and user can cancel + rebook
+          setSelectedBooking(null);
+        }}
+        isOwner={selectedBooking?.userId === currentUserId}
+        isAdmin={isAdmin}
+        isCancelling={cancelBooking.isPending}
+      />
+    </div>
+  );
+}
