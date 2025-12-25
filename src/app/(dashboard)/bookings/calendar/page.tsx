@@ -39,7 +39,7 @@ export default function CalendarPage() {
   const calendar = useCalendar("week");
   const currentUserId = session?.user?.id ?? "";
   const isAdmin = session?.user?.role === "admin";
-  const { t } = useTranslations();
+  const { t, translateError } = useTranslations();
 
   // Dialog state
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
@@ -97,7 +97,7 @@ export default function CalendarPage() {
       toast({
         type: "error",
         title: t("notifications.bookingFailed"),
-        description: error.message,
+        description: translateError(error.message),
       });
     },
   });
@@ -116,7 +116,7 @@ export default function CalendarPage() {
       toast({
         type: "error",
         title: t("notifications.cancellationFailed"),
-        description: error.message,
+        description: translateError(error.message),
       });
     },
   });
@@ -136,7 +136,7 @@ export default function CalendarPage() {
       toast({
         type: "error",
         title: t("notifications.updateFailed"),
-        description: error.message,
+        description: translateError(error.message),
       });
     },
   });

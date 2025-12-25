@@ -6,12 +6,14 @@ import {
   translations,
   locales,
   localeNames,
+  translateError as translateErrorFn,
 } from "@/lib/translations";
 
 interface TranslationContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
+  translateError: (message: string) => string;
   locales: Locale[];
   localeNames: Record<Locale, string>;
 }
@@ -87,12 +89,18 @@ export function TranslationProvider({
     [locale]
   );
 
+  const translateError = useCallback(
+    (message: string) => translateErrorFn(message, locale),
+    [locale]
+  );
+
   return (
     <TranslationContext.Provider
       value={{
         locale,
         setLocale: handleSetLocale,
         t,
+        translateError,
         locales,
         localeNames,
       }}

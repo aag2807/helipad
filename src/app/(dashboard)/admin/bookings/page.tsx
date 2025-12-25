@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { 
   Search, 
   Download, 
@@ -12,6 +13,7 @@ import {
   X
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -29,6 +31,9 @@ import {
 import { toast } from "@/components/ui/toast";
 
 export default function AdminBookingsPage() {
+  const { t, locale, translateError } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
+  
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState<string>("");
@@ -47,15 +52,15 @@ export default function AdminBookingsPage() {
       refetch();
       toast({
         type: "success",
-        title: "Booking cancelled",
-        description: "The booking has been cancelled.",
+        title: t("adminBookings.bookingCancelled"),
+        description: t("adminBookings.bookingCancelledDescription"),
       });
     },
     onError: (error) => {
       toast({
         type: "error",
-        title: "Error",
-        description: error.message,
+        title: t("errors.generic"),
+        description: translateError(error.message),
       });
     },
   });
@@ -98,8 +103,8 @@ export default function AdminBookingsPage() {
 
     toast({
       type: "success",
-      title: "Export complete",
-      description: `Exported ${data.bookings.length} bookings to CSV.`,
+      title: t("adminBookings.exportComplete"),
+      description: t("adminBookings.exportedBookings", { count: data.bookings.length.toString() }),
     });
   };
 
@@ -119,19 +124,19 @@ export default function AdminBookingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">All Bookings</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">{t("adminBookings.title")}</h1>
           <p className="text-zinc-500 mt-1">
-            View and manage all helipad bookings
+            {t("adminBookings.description")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t("common.refresh")}
           </Button>
           <Button onClick={handleExportCSV} disabled={bookings.length === 0}>
             <Download className="w-4 h-4" />
-            Export CSV
+            {t("common.exportCSV")}
           </Button>
         </div>
       </div>
@@ -140,19 +145,19 @@ export default function AdminBookingsPage() {
       <div className="bg-white rounded-2xl border border-zinc-200 p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="w-4 h-4 text-zinc-500" />
-          <span className="text-sm font-medium text-zinc-700">Filters</span>
+          <span className="text-sm font-medium text-zinc-700">{t("common.filters")}</span>
           {hasFilters && (
             <button
               onClick={handleClearFilters}
-              className="text-xs text-violet-600 hover:text-violet-700 ml-auto"
+              className="text-xs text-violet-600 hover:text-violet-700 ml-auto cursor-pointer"
             >
-              Clear all
+              {t("common.clearAll")}
             </button>
           )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">From Date</label>
+            <label className="text-xs text-zinc-500 mb-1 block">{t("adminBookings.fromDate")}</label>
             <Input
               type="date"
               value={startDate}
@@ -163,7 +168,7 @@ export default function AdminBookingsPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">To Date</label>
+            <label className="text-xs text-zinc-500 mb-1 block">{t("adminBookings.toDate")}</label>
             <Input
               type="date"
               value={endDate}
@@ -174,7 +179,7 @@ export default function AdminBookingsPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">Status</label>
+            <label className="text-xs text-zinc-500 mb-1 block">{t("adminBookings.status")}</label>
             <Select
               value={status}
               onChange={(e) => {
@@ -182,9 +187,9 @@ export default function AdminBookingsPage() {
                 setPage(1);
               }}
             >
-              <option value="">All Status</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="">{t("adminUsers.allStatus")}</option>
+              <option value="confirmed">{t("bookingStatus.confirmed")}</option>
+              <option value="cancelled">{t("bookingStatus.cancelled")}</option>
             </Select>
           </div>
           <div className="flex items-end">
@@ -195,7 +200,7 @@ export default function AdminBookingsPage() {
               disabled={!hasFilters}
             >
               <X className="w-4 h-4" />
-              Clear
+              {t("common.clear")}
             </Button>
           </div>
         </div>
@@ -204,7 +209,7 @@ export default function AdminBookingsPage() {
       {/* Results count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-zinc-500">
-          {pagination.total} booking{pagination.total !== 1 ? "s" : ""} found
+          {pagination.total} {pagination.total !== 1 ? t("common.bookingsFound") : t("common.bookingFound")}
         </p>
       </div>
 
@@ -218,19 +223,19 @@ export default function AdminBookingsPage() {
           <Table>
             <TableHeader>
               <TableRow className="bg-zinc-50/50">
-                <TableHead>User</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Purpose</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-24">Actions</TableHead>
+                <TableHead>{t("adminBookings.tableHeaders.user")}</TableHead>
+                <TableHead>{t("adminBookings.tableHeaders.date")}</TableHead>
+                <TableHead>{t("adminBookings.tableHeaders.time")}</TableHead>
+                <TableHead>{t("adminBookings.tableHeaders.purpose")}</TableHead>
+                <TableHead>{t("adminBookings.tableHeaders.status")}</TableHead>
+                <TableHead className="w-24">{t("adminBookings.tableHeaders.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
-                    No bookings found
+                    {t("adminBookings.noBookingsFound")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -241,7 +246,7 @@ export default function AdminBookingsPage() {
                         <p className="font-medium text-zinc-900">
                           {booking.user
                             ? `${booking.user.firstName} ${booking.user.lastName}`
-                            : "Unknown"}
+                            : t("adminBookings.unknown")}
                         </p>
                         <p className="text-xs text-zinc-500">
                           {booking.user?.email}
@@ -251,7 +256,7 @@ export default function AdminBookingsPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-zinc-400" />
-                        {format(new Date(booking.startTime!), "MMM d, yyyy")}
+                        {format(new Date(booking.startTime!), "MMM d, yyyy", { locale: dateLocale })}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -269,7 +274,7 @@ export default function AdminBookingsPage() {
                           booking.status === "confirmed" ? "success" : "destructive"
                         }
                       >
-                        {booking.status}
+                        {booking.status === "confirmed" ? t("bookingStatus.confirmed") : t("bookingStatus.cancelled")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -282,7 +287,7 @@ export default function AdminBookingsPage() {
                           disabled={cancelBooking.isPending}
                         >
                           <X className="w-4 h-4" />
-                          Cancel
+                          {t("common.cancel")}
                         </Button>
                       )}
                     </TableCell>

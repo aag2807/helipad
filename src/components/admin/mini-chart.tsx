@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
 
 interface MiniChartProps {
@@ -9,6 +10,8 @@ interface MiniChartProps {
 }
 
 export function MiniChart({ data, height = 120 }: MiniChartProps) {
+  const { t } = useTranslations();
+  
   const { max, points, labels } = useMemo(() => {
     const maxValue = Math.max(...data.map((d) => d.bookings), 1);
     const width = 100 / (data.length - 1);
@@ -35,7 +38,7 @@ export function MiniChart({ data, height = 120 }: MiniChartProps) {
   return (
     <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
       <h3 className="text-sm font-medium text-zinc-500 mb-4">
-        Booking Trends (Last 30 Days)
+        {t("adminDashboard.bookingTrends")}
       </h3>
 
       <div style={{ height }} className="relative">

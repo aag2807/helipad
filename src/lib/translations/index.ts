@@ -70,5 +70,31 @@ export const localeNames: Record<Locale, string> = {
   es: "Español",
 };
 
+/**
+ * Map of known server error messages to translation keys
+ */
+const errorMessageMap: Record<string, string> = {
+  "End time must be after start time": "errors.endTimeAfterStart",
+  "Cannot book time slots for past dates": "errors.cannotBookPastDates",
+  "This time slot conflicts with an existing booking": "errors.timeSlotConflict",
+  "Booking not found": "errors.bookingNotFound",
+  "Access denied": "errors.accessDenied",
+  "Cannot modify past bookings": "errors.cannotModifyPastBookings",
+  "Booking is already cancelled": "errors.bookingAlreadyCancelled",
+};
+
+/**
+ * Translate a server error message to the current locale
+ * Falls back to the original message if no translation is found
+ */
+export function translateError(message: string, locale: Locale = "en"): string {
+  const translationKey = errorMessageMap[message];
+  if (translationKey) {
+    const translator = createTranslator(locale);
+    return translator(translationKey);
+  }
+  return message;
+}
+
 export { en, es };
 

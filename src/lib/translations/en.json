@@ -34,7 +34,11 @@
     "showing": "Showing",
     "of": "of",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "showingOf": "Showing {count} of {total}",
+    "users": "users",
+    "bookingsFound": "bookings found",
+    "bookingFound": "booking found"
   },
 
   "auth": {
@@ -202,7 +206,8 @@
     "noUpcoming": "No upcoming bookings",
     "noPast": "No past bookings",
     "bookFirstSlot": "Book your first helipad slot to get started.",
-    "completedBookingsHere": "Your completed bookings will appear here."
+    "completedBookingsHere": "Your completed bookings will appear here.",
+    "bookings": "bookings"
   },
 
   "adminDashboard": {
@@ -219,7 +224,8 @@
     "topBookersMonth": "Top Bookers (Month)",
     "noBookingsMonth": "No bookings this month",
     "popularTimeSlotsMonth": "Popular Time Slots (Month)",
-    "bookingsCount": "bookings"
+    "bookingsCount": "bookings",
+    "bookingTrends": "Booking Trends (Last 30 Days)"
   },
 
   "adminUsers": {
@@ -420,7 +426,14 @@
     "networkError": "Network error. Please check your connection.",
     "sessionExpired": "Your session has expired. Please sign in again.",
     "unauthorized": "You don't have permission to perform this action.",
-    "notFound": "The requested resource was not found."
+    "notFound": "The requested resource was not found.",
+    "endTimeAfterStart": "End time must be after start time",
+    "cannotBookPastDates": "Cannot book time slots for past dates",
+    "timeSlotConflict": "This time slot conflicts with an existing booking",
+    "bookingNotFound": "Booking not found",
+    "accessDenied": "Access denied",
+    "cannotModifyPastBookings": "Cannot modify past bookings",
+    "bookingAlreadyCancelled": "Booking is already cancelled"
   }
 }
 

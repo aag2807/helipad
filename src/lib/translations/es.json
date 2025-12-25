@@ -34,7 +34,11 @@
     "showing": "Mostrando",
     "of": "de",
     "active": "Activo",
-    "inactive": "Inactivo"
+    "inactive": "Inactivo",
+    "showingOf": "Mostrando {count} de {total}",
+    "users": "usuarios",
+    "bookingsFound": "reservas encontradas",
+    "bookingFound": "reserva encontrada"
   },
 
   "auth": {
@@ -202,7 +206,8 @@
     "noUpcoming": "No hay reservas próximas",
     "noPast": "No hay reservas pasadas",
     "bookFirstSlot": "Reserva tu primer horario del helipuerto para comenzar.",
-    "completedBookingsHere": "Tus reservas completadas aparecerán aquí."
+    "completedBookingsHere": "Tus reservas completadas aparecerán aquí.",
+    "bookings": "reservas"
   },
 
   "adminDashboard": {
@@ -219,7 +224,8 @@
     "topBookersMonth": "Mejores Reservadores (Mes)",
     "noBookingsMonth": "Sin reservas este mes",
     "popularTimeSlotsMonth": "Horarios Populares (Mes)",
-    "bookingsCount": "reservas"
+    "bookingsCount": "reservas",
+    "bookingTrends": "Tendencias de Reservas (Últimos 30 Días)"
   },
 
   "adminUsers": {
@@ -420,7 +426,14 @@
     "networkError": "Error de red. Por favor verifica tu conexión.",
     "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión de nuevo.",
     "unauthorized": "No tienes permiso para realizar esta acción.",
-    "notFound": "El recurso solicitado no fue encontrado."
+    "notFound": "El recurso solicitado no fue encontrado.",
+    "endTimeAfterStart": "La hora de fin debe ser posterior a la hora de inicio",
+    "cannotBookPastDates": "No se pueden reservar horarios de fechas pasadas",
+    "timeSlotConflict": "Este horario tiene conflicto con una reserva existente",
+    "bookingNotFound": "Reserva no encontrada",
+    "accessDenied": "Acceso denegado",
+    "cannotModifyPastBookings": "No se pueden modificar reservas pasadas",
+    "bookingAlreadyCancelled": "La reserva ya está cancelada"
   }
 }
 

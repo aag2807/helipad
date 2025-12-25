@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, AlertTriangle } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,6 +35,8 @@ export function DeleteUserDialog({
   onConfirm,
   isLoading,
 }: DeleteUserDialogProps) {
+  const { t } = useTranslations();
+  
   if (!user) return null;
 
   return (
@@ -42,25 +45,24 @@ export function DeleteUserDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-500" />
-            Delete User
+            {t("deleteUserDialog.title")}
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the user
-            account and all associated data.
+            {t("deleteUserDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody>
           <div className="bg-red-50 border border-red-100 rounded-xl p-4">
             <p className="text-sm text-red-800">
-              You are about to delete{" "}
+              {t("deleteUserDialog.aboutToDelete")}{" "}
               <span className="font-semibold">
                 {user.firstName} {user.lastName}
               </span>{" "}
               (<span className="font-mono text-xs">@{user.username}</span>).
             </p>
             <p className="text-sm text-red-600 mt-2">
-              All bookings associated with this user will also be deleted.
+              {t("deleteUserDialog.bookingsWillBeDeleted")}
             </p>
           </div>
         </DialogBody>
@@ -71,7 +73,7 @@ export function DeleteUserDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -80,7 +82,7 @@ export function DeleteUserDialog({
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Delete User
+            {t("deleteUserDialog.deleteUser")}
           </Button>
         </DialogFooter>
       </DialogContent>

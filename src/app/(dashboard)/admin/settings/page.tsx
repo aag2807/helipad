@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { 
   Clock, 
   Calendar, 
@@ -13,6 +14,7 @@ import {
   Settings as SettingsIcon
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +23,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 
 export default function SettingsPage() {
+  const { t, locale, translateError } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
+  
   const { data: settings, isLoading } = trpc.settings.getAll.useQuery();
   const utils = trpc.useUtils();
 
@@ -58,15 +63,15 @@ export default function SettingsPage() {
       utils.settings.getAll.invalidate();
       toast({
         type: "success",
-        title: "Settings saved",
-        description: "Your changes have been saved successfully.",
+        title: t("adminSettings.settingsSaved"),
+        description: t("adminSettings.settingsSavedDescription"),
       });
     },
     onError: (error) => {
       toast({
         type: "error",
-        title: "Error",
-        description: error.message,
+        title: t("errors.generic"),
+        description: translateError(error.message),
       });
     },
   });
@@ -78,7 +83,7 @@ export default function SettingsPage() {
       utils.settings.getAll.invalidate();
       toast({
         type: "success",
-        title: "Blackout date added",
+        title: t("adminSettings.blackoutDateAdded"),
       });
     },
   });
@@ -89,7 +94,7 @@ export default function SettingsPage() {
       utils.settings.getAll.invalidate();
       toast({
         type: "success",
-        title: "Blackout date removed",
+        title: t("adminSettings.blackoutDateRemoved"),
       });
     },
   });
@@ -136,9 +141,9 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">System Settings</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">{t("adminSettings.title")}</h1>
         <p className="text-zinc-500 mt-1">
-          Configure helipad booking system settings
+          {t("adminSettings.description")}
         </p>
       </div>
 
@@ -149,14 +154,14 @@ export default function SettingsPage() {
             <Clock className="w-5 h-5 text-violet-600" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Operational Hours</h2>
-            <p className="text-sm text-zinc-500">Set when the helipad is available for booking</p>
+            <h2 className="text-lg font-semibold text-zinc-900">{t("adminSettings.operationalHours.title")}</h2>
+            <p className="text-sm text-zinc-500">{t("adminSettings.operationalHours.description")}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="space-y-2">
-            <Label>Opening Time</Label>
+            <Label>{t("adminSettings.operationalHours.openingTime")}</Label>
             <Select
               value={operationalHours.start}
               onChange={(e) =>
@@ -171,7 +176,7 @@ export default function SettingsPage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Closing Time</Label>
+            <Label>{t("adminSettings.operationalHours.closingTime")}</Label>
             <Select
               value={operationalHours.end}
               onChange={(e) =>
@@ -189,40 +194,40 @@ export default function SettingsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="space-y-2">
-            <Label>Time Slot Duration</Label>
+            <Label>{t("adminSettings.operationalHours.timeSlotDuration")}</Label>
             <Select
               value={timeSlotDuration.toString()}
               onChange={(e) => setTimeSlotDuration(Number(e.target.value))}
             >
-              <option value="15">15 minutes</option>
-              <option value="30">30 minutes</option>
-              <option value="60">1 hour</option>
+              <option value="15">{t("adminSettings.durations.15min")}</option>
+              <option value="30">{t("adminSettings.durations.30min")}</option>
+              <option value="60">{t("adminSettings.durations.1hour")}</option>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Max Booking Duration</Label>
+            <Label>{t("adminSettings.operationalHours.maxBookingDuration")}</Label>
             <Select
               value={maxBookingDuration.toString()}
               onChange={(e) => setMaxBookingDuration(Number(e.target.value))}
             >
-              <option value="60">1 hour</option>
-              <option value="120">2 hours</option>
-              <option value="180">3 hours</option>
-              <option value="240">4 hours</option>
-              <option value="480">8 hours</option>
+              <option value="60">{t("adminSettings.durations.1hour")}</option>
+              <option value="120">{t("adminSettings.durations.2hours")}</option>
+              <option value="180">{t("adminSettings.durations.3hours")}</option>
+              <option value="240">{t("adminSettings.durations.4hours")}</option>
+              <option value="480">{t("adminSettings.durations.8hours")}</option>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Min. Advance Notice</Label>
+            <Label>{t("adminSettings.operationalHours.minAdvanceNotice")}</Label>
             <Select
               value={minBookingNotice.toString()}
               onChange={(e) => setMinBookingNotice(Number(e.target.value))}
             >
-              <option value="0">None</option>
-              <option value="30">30 minutes</option>
-              <option value="60">1 hour</option>
-              <option value="120">2 hours</option>
-              <option value="1440">24 hours</option>
+              <option value="0">{t("adminSettings.durations.none")}</option>
+              <option value="30">{t("adminSettings.durations.30min")}</option>
+              <option value="60">{t("adminSettings.durations.1hour")}</option>
+              <option value="120">{t("adminSettings.durations.2hours")}</option>
+              <option value="1440">{t("adminSettings.durations.24hours")}</option>
             </Select>
           </div>
         </div>
@@ -231,7 +236,7 @@ export default function SettingsPage() {
           <Button onClick={handleSaveGeneral} disabled={updateSettings.isPending}>
             {updateSettings.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             <Save className="w-4 h-4" />
-            Save Changes
+            {t("common.saveChanges")}
           </Button>
         </div>
       </div>
@@ -243,8 +248,8 @@ export default function SettingsPage() {
             <Calendar className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Blackout Dates</h2>
-            <p className="text-sm text-zinc-500">Days when the helipad is unavailable</p>
+            <h2 className="text-lg font-semibold text-zinc-900">{t("adminSettings.blackoutDates.title")}</h2>
+            <p className="text-sm text-zinc-500">{t("adminSettings.blackoutDates.description")}</p>
           </div>
         </div>
 
@@ -261,7 +266,7 @@ export default function SettingsPage() {
             disabled={!newBlackoutDate || addBlackoutDate.isPending}
           >
             <Plus className="w-4 h-4" />
-            Add Date
+            {t("adminSettings.blackoutDates.addDate")}
           </Button>
         </div>
 
@@ -273,11 +278,11 @@ export default function SettingsPage() {
                 className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg text-sm"
               >
                 <span className="text-red-800">
-                  {format(new Date(date), "MMM d, yyyy")}
+                  {format(new Date(date), "MMM d, yyyy", { locale: dateLocale })}
                 </span>
                 <button
                   onClick={() => handleRemoveBlackout(date)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 cursor-pointer"
                   disabled={removeBlackoutDate.isPending}
                 >
                   <X className="w-4 h-4" />
@@ -286,7 +291,7 @@ export default function SettingsPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">No blackout dates configured</p>
+          <p className="text-sm text-zinc-500">{t("adminSettings.blackoutDates.noBlackoutDates")}</p>
         )}
       </div>
 
@@ -297,8 +302,8 @@ export default function SettingsPage() {
             <Bell className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Email Notifications</h2>
-            <p className="text-sm text-zinc-500">Configure automated email settings</p>
+            <h2 className="text-lg font-semibold text-zinc-900">{t("adminSettings.emailNotifications.title")}</h2>
+            <p className="text-sm text-zinc-500">{t("adminSettings.emailNotifications.description")}</p>
           </div>
         </div>
 
@@ -310,11 +315,11 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setEmailSettings({ ...emailSettings, confirmationEnabled: e.target.checked })
               }
-              className="h-5 w-5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500"
+              className="h-5 w-5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
             />
             <div>
-              <p className="font-medium text-zinc-900">Booking Confirmations</p>
-              <p className="text-sm text-zinc-500">Send email when a booking is created</p>
+              <p className="font-medium text-zinc-900">{t("adminSettings.emailNotifications.confirmations.title")}</p>
+              <p className="text-sm text-zinc-500">{t("adminSettings.emailNotifications.confirmations.description")}</p>
             </div>
           </label>
 
@@ -325,11 +330,11 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setEmailSettings({ ...emailSettings, reminderEnabled: e.target.checked })
               }
-              className="h-5 w-5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500"
+              className="h-5 w-5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
             />
             <div className="flex-1">
-              <p className="font-medium text-zinc-900">Booking Reminders</p>
-              <p className="text-sm text-zinc-500">Send reminder before booking time</p>
+              <p className="font-medium text-zinc-900">{t("adminSettings.emailNotifications.reminders.title")}</p>
+              <p className="text-sm text-zinc-500">{t("adminSettings.emailNotifications.reminders.description")}</p>
             </div>
             <Select
               value={emailSettings.reminderHoursBefore.toString()}
@@ -342,11 +347,11 @@ export default function SettingsPage() {
               className="w-32"
               disabled={!emailSettings.reminderEnabled}
             >
-              <option value="1">1 hour</option>
-              <option value="2">2 hours</option>
-              <option value="12">12 hours</option>
-              <option value="24">24 hours</option>
-              <option value="48">48 hours</option>
+              <option value="1">{t("adminSettings.emailNotifications.reminderTiming.1hour")}</option>
+              <option value="2">{t("adminSettings.emailNotifications.reminderTiming.2hours")}</option>
+              <option value="12">{t("adminSettings.emailNotifications.reminderTiming.12hours")}</option>
+              <option value="24">{t("adminSettings.emailNotifications.reminderTiming.24hours")}</option>
+              <option value="48">{t("adminSettings.emailNotifications.reminderTiming.48hours")}</option>
             </Select>
           </label>
 
@@ -360,11 +365,11 @@ export default function SettingsPage() {
                   adminNotificationsEnabled: e.target.checked,
                 })
               }
-              className="h-5 w-5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500"
+              className="h-5 w-5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
             />
             <div>
-              <p className="font-medium text-zinc-900">Admin Notifications</p>
-              <p className="text-sm text-zinc-500">Notify admins of new bookings and cancellations</p>
+              <p className="font-medium text-zinc-900">{t("adminSettings.emailNotifications.adminNotifications.title")}</p>
+              <p className="text-sm text-zinc-500">{t("adminSettings.emailNotifications.adminNotifications.description")}</p>
             </div>
           </label>
         </div>
@@ -373,7 +378,7 @@ export default function SettingsPage() {
           <Button onClick={handleSaveEmail} disabled={updateSettings.isPending}>
             {updateSettings.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             <Save className="w-4 h-4" />
-            Save Changes
+            {t("common.saveChanges")}
           </Button>
         </div>
       </div>

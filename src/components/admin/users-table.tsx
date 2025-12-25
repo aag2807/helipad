@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { MoreHorizontal, Edit, Trash2, UserCheck, UserX } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +43,7 @@ export function UsersTable({
   selectedIds,
   onSelectionChange,
 }: UsersTableProps) {
+  const { t } = useTranslations();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -78,14 +80,14 @@ export function UsersTable({
                   if (el) el.indeterminate = isSomeSelected;
                 }}
                 onChange={toggleSelectAll}
-                className="h-4 w-4 rounded border-zinc-300 text-violet-600 focus:ring-violet-500"
+                className="h-4 w-4 rounded border-zinc-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
               />
             </TableHead>
-            <TableHead>User</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead>{t("adminUsers.tableHeaders.user")}</TableHead>
+            <TableHead>{t("adminUsers.tableHeaders.username")}</TableHead>
+            <TableHead>{t("adminUsers.tableHeaders.role")}</TableHead>
+            <TableHead>{t("adminUsers.tableHeaders.status")}</TableHead>
+            <TableHead>{t("adminUsers.tableHeaders.created")}</TableHead>
             <TableHead className="w-12"></TableHead>
           </TableRow>
         </TableHeader>
@@ -93,7 +95,7 @@ export function UsersTable({
           {users.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
-                No users found
+                {t("adminUsers.noUsersFound")}
               </TableCell>
             </TableRow>
           ) : (
@@ -128,12 +130,12 @@ export function UsersTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                    {user.role}
+                    {user.role === "admin" ? t("roles.admin") : t("roles.user")}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge variant={user.isActive ? "success" : "outline"}>
-                    {user.isActive ? "Active" : "Inactive"}
+                    {user.isActive ? t("common.active") : t("common.inactive")}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-zinc-500 text-sm">
@@ -176,17 +178,17 @@ export function UsersTable({
                           style={{ top: menuPosition.top, left: menuPosition.left }}
                         >
                           <button
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                             onClick={() => {
                               onEdit(user);
                               setOpenMenuId(null);
                             }}
                           >
                             <Edit className="w-4 h-4" />
-                            Edit
+                            {t("common.edit")}
                           </button>
                           <button
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                             onClick={() => {
                               onToggleStatus(user);
                               setOpenMenuId(null);
@@ -195,25 +197,25 @@ export function UsersTable({
                             {user.isActive ? (
                               <>
                                 <UserX className="w-4 h-4" />
-                                Deactivate
+                                {t("adminUsers.deactivate")}
                               </>
                             ) : (
                               <>
                                 <UserCheck className="w-4 h-4" />
-                                Activate
+                                {t("adminUsers.activate")}
                               </>
                             )}
                           </button>
                           <hr className="my-1 border-zinc-100" />
                           <button
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                             onClick={() => {
                               onDelete(user);
                               setOpenMenuId(null);
                             }}
                           >
                             <Trash2 className="w-4 h-4" />
-                            Delete
+                            {t("common.delete")}
                           </button>
                         </div>
                       </>

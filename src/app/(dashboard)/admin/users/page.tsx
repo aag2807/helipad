@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, Plus, UserCheck, UserX, RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -25,6 +26,8 @@ interface User {
 }
 
 export default function UsersPage() {
+  const { t } = useTranslations();
+  
   // Search & filter state
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("");
@@ -154,14 +157,14 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">User Management</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">{t("adminUsers.title")}</h1>
           <p className="text-zinc-500 mt-1">
-            Manage users and their permissions
+            {t("adminUsers.description")}
           </p>
         </div>
         <Button onClick={() => setIsFormOpen(true)}>
           <Plus className="w-4 h-4" />
-          Add User
+          {t("adminUsers.addUser")}
         </Button>
       </div>
 
@@ -170,7 +173,7 @@ export default function UsersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <Input
-            placeholder="Search users..."
+            placeholder={t("adminUsers.searchUsers")}
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10"
@@ -184,9 +187,9 @@ export default function UsersPage() {
           }}
           className="w-full sm:w-40"
         >
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="user">User</option>
+          <option value="">{t("adminUsers.allRoles")}</option>
+          <option value="admin">{t("roles.admin")}</option>
+          <option value="user">{t("roles.user")}</option>
         </Select>
         <Select
           value={statusFilter}
@@ -196,9 +199,9 @@ export default function UsersPage() {
           }}
           className="w-full sm:w-40"
         >
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+          <option value="">{t("adminUsers.allStatus")}</option>
+          <option value="active">{t("common.active")}</option>
+          <option value="inactive">{t("common.inactive")}</option>
         </Select>
         <Button
           variant="outline"
@@ -213,7 +216,7 @@ export default function UsersPage() {
       {/* Bulk actions */}
       {selectedIds.length > 0 && (
         <div className="flex items-center gap-3 p-3 bg-violet-50 rounded-xl animate-fade-in">
-          <Badge variant="default">{selectedIds.length} selected</Badge>
+          <Badge variant="default">{selectedIds.length} {t("common.selected")}</Badge>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -222,7 +225,7 @@ export default function UsersPage() {
               disabled={bulkUpdateStatus.isPending}
             >
               <UserCheck className="w-4 h-4" />
-              Activate
+              {t("adminUsers.activate")}
             </Button>
             <Button
               variant="outline"
@@ -231,14 +234,14 @@ export default function UsersPage() {
               disabled={bulkUpdateStatus.isPending}
             >
               <UserX className="w-4 h-4" />
-              Deactivate
+              {t("adminUsers.deactivate")}
             </Button>
           </div>
           <button
-            className="ml-auto text-sm text-zinc-500 hover:text-zinc-700"
+            className="ml-auto text-sm text-zinc-500 hover:text-zinc-700 cursor-pointer"
             onClick={() => setSelectedIds([])}
           >
-            Clear selection
+            {t("common.clearSelection")}
           </button>
         </div>
       )}
@@ -262,7 +265,7 @@ export default function UsersPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-zinc-500">
-              Showing {users.length} of {pagination.total} users
+              {t("common.showingOf", { count: users.length.toString(), total: pagination.total.toString() })} {t("common.users")}
             </p>
             <Pagination
               currentPage={pagination.page}

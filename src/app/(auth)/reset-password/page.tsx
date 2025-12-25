@@ -5,12 +5,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Lock, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 function ResetPasswordForm() {
+  const { t } = useTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token") || "";
@@ -42,12 +45,12 @@ function ResetPasswordForm() {
     setError("");
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t("resetPassword.passwordMinLength"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("resetPassword.passwordsDontMatch"));
       return;
     }
 
@@ -60,7 +63,7 @@ function ResetPasswordForm() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 via-violet-50/30 to-zinc-100 p-4">
         <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/50 p-8 text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-zinc-500">Validating reset link...</p>
+          <p className="mt-4 text-zinc-500">{t("resetPassword.validatingLink")}</p>
         </div>
       </div>
     );
@@ -76,20 +79,19 @@ function ResetPasswordForm() {
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900 mb-2">
-              Invalid or Expired Link
+              {t("resetPassword.invalidOrExpiredLink")}
             </h1>
             <p className="text-zinc-500 mb-8">
-              This password reset link is invalid or has expired. 
-              Please request a new one.
+              {t("resetPassword.invalidLinkDescription")}
             </p>
             <div className="space-y-3">
               <Link href="/forgot-password">
-                <Button className="w-full">Request New Link</Button>
+                <Button className="w-full">{t("resetPassword.requestNewLink")}</Button>
               </Link>
               <Link href="/login">
                 <Button variant="outline" className="w-full">
                   <ArrowLeft className="w-4 h-4" />
-                  Back to Login
+                  {t("forgotPassword.backToLogin")}
                 </Button>
               </Link>
             </div>
@@ -109,14 +111,13 @@ function ResetPasswordForm() {
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900 mb-2">
-              Password Reset!
+              {t("resetPassword.passwordReset")}
             </h1>
             <p className="text-zinc-500 mb-8">
-              Your password has been successfully reset. 
-              You can now log in with your new password.
+              {t("resetPassword.passwordResetSuccess")}
             </p>
             <Link href="/login">
-              <Button className="w-full">Go to Login</Button>
+              <Button className="w-full">{t("resetPassword.goToLogin")}</Button>
             </Link>
           </div>
         </div>
@@ -127,6 +128,11 @@ function ResetPasswordForm() {
   // Reset form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 via-violet-50/30 to-zinc-100 p-4">
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher variant="compact" />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/50 p-8">
           {/* Header */}
@@ -135,10 +141,10 @@ function ResetPasswordForm() {
               <Lock className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900 mb-2">
-              Set New Password
+              {t("resetPassword.title")}
             </h1>
             <p className="text-zinc-500">
-              Hi {validation.firstName}, choose a new password for your account.
+              {t("resetPassword.description", { firstName: validation.firstName })}
             </p>
           </div>
 
@@ -152,12 +158,12 @@ function ResetPasswordForm() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">{t("resetPassword.newPassword")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter new password"
+                  placeholder={t("resetPassword.enterNewPassword")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -165,7 +171,7 @@ function ResetPasswordForm() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -178,19 +184,19 @@ function ResetPasswordForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t("resetPassword.confirmPassword")}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm new password"
+                  placeholder={t("resetPassword.confirmNewPassword")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
@@ -207,7 +213,7 @@ function ResetPasswordForm() {
               className="w-full"
               disabled={resetPassword.isPending}
             >
-              {resetPassword.isPending ? "Resetting..." : "Reset Password"}
+              {resetPassword.isPending ? t("resetPassword.resetting") : t("resetPassword.resetPassword")}
             </Button>
           </form>
 
@@ -218,7 +224,7 @@ function ResetPasswordForm() {
               className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to login
+              {t("forgotPassword.backToLogin")}
             </Link>
           </div>
         </div>
@@ -227,18 +233,21 @@ function ResetPasswordForm() {
   );
 }
 
+function LoadingFallback() {
+  const { t } = useTranslations();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 via-violet-50/30 to-zinc-100 p-4">
+      <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/50 p-8 text-center">
+        <Spinner size="lg" />
+        <p className="mt-4 text-zinc-500">{t("common.loading")}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 via-violet-50/30 to-zinc-100 p-4">
-          <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/50 p-8 text-center">
-            <Spinner size="lg" />
-            <p className="mt-4 text-zinc-500">Loading...</p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingFallback />}>
       <ResetPasswordForm />
     </Suspense>
   );

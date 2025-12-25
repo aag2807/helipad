@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +61,7 @@ export function UserForm({
   onSubmit,
   isLoading,
 }: UserFormProps) {
+  const { t } = useTranslations();
   const isEditing = !!user;
 
   const {
@@ -128,11 +130,11 @@ export function UserForm({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit User" : "Create New User"}</DialogTitle>
+          <DialogTitle>{isEditing ? t("userForm.editTitle") : t("userForm.createTitle")}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Update the user's information below."
-              : "Fill in the details to create a new user account."}
+              ? t("userForm.editDescription")
+              : t("userForm.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -142,13 +144,13 @@ export function UserForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" required>
-                  First Name
+                  {t("userForm.firstName")}
                 </Label>
                 <Input
                   id="firstName"
                   {...register("firstName")}
                   error={!!errors.firstName}
-                  placeholder="John"
+                  placeholder={t("userForm.placeholders.firstName")}
                 />
                 {errors.firstName && (
                   <p className="text-xs text-red-600">{errors.firstName.message}</p>
@@ -156,13 +158,13 @@ export function UserForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName" required>
-                  Last Name
+                  {t("userForm.lastName")}
                 </Label>
                 <Input
                   id="lastName"
                   {...register("lastName")}
                   error={!!errors.lastName}
-                  placeholder="Doe"
+                  placeholder={t("userForm.placeholders.lastName")}
                 />
                 {errors.lastName && (
                   <p className="text-xs text-red-600">{errors.lastName.message}</p>
@@ -173,13 +175,13 @@ export function UserForm({
             {/* Username */}
             <div className="space-y-2">
               <Label htmlFor="username" required>
-                Username
+                {t("userForm.username")}
               </Label>
               <Input
                 id="username"
                 {...register("username")}
                 error={!!errors.username}
-                placeholder="johndoe"
+                placeholder={t("userForm.placeholders.username")}
               />
               {errors.username && (
                 <p className="text-xs text-red-600">{errors.username.message}</p>
@@ -189,14 +191,14 @@ export function UserForm({
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" required>
-                Email
+                {t("userForm.email")}
               </Label>
               <Input
                 id="email"
                 type="email"
                 {...register("email")}
                 error={!!errors.email}
-                placeholder="john@example.com"
+                placeholder={t("userForm.placeholders.email")}
               />
               {errors.email && (
                 <p className="text-xs text-red-600">{errors.email.message}</p>
@@ -206,14 +208,14 @@ export function UserForm({
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password" required={!isEditing}>
-                Password {isEditing && "(leave blank to keep current)"}
+                {isEditing ? t("userForm.passwordKeepCurrent") : t("userForm.password")}
               </Label>
               <Input
                 id="password"
                 type="password"
                 {...register("password")}
                 error={!!errors.password}
-                placeholder={isEditing ? "••••••••" : "Min. 8 characters"}
+                placeholder={isEditing ? t("userForm.placeholders.passwordEdit") : t("userForm.placeholders.passwordNew")}
               />
               {errors.password && (
                 <p className="text-xs text-red-600">{errors.password.message}</p>
@@ -224,16 +226,16 @@ export function UserForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="role" required>
-                  Role
+                  {t("userForm.role")}
                 </Label>
                 <Select id="role" {...register("role")} error={!!errors.role}>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">{t("roles.user")}</option>
+                  <option value="admin">{t("roles.admin")}</option>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="isActive" required>
-                  Status
+                  {t("userForm.status")}
                 </Label>
                 <Select
                   id="isActive"
@@ -241,8 +243,8 @@ export function UserForm({
                     setValueAs: (v) => v === "true",
                   })}
                 >
-                  <option value="true">Active</option>
-                  <option value="false">Inactive</option>
+                  <option value="true">{t("common.active")}</option>
+                  <option value="false">{t("common.inactive")}</option>
                 </Select>
               </div>
             </div>
@@ -250,11 +252,11 @@ export function UserForm({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isEditing ? "Update User" : "Create User"}
+              {isEditing ? t("userForm.updateUser") : t("userForm.createUser")}
             </Button>
           </DialogFooter>
         </form>

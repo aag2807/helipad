@@ -4,11 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslations();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -34,19 +37,18 @@ export default function ForgotPasswordPage() {
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900 mb-2">
-              Check your email
+              {t("forgotPassword.checkEmail")}
             </h1>
             <p className="text-zinc-500 mb-6">
-              If an account exists for <strong>{email}</strong>, we've sent 
-              instructions to reset your password.
+              {t("forgotPassword.emailSentDescription", { email })}
             </p>
             <p className="text-sm text-zinc-400 mb-8">
-              The link will expire in 1 hour. Don't forget to check your spam folder.
+              {t("forgotPassword.linkExpiry")}
             </p>
             <Link href="/login">
               <Button variant="outline" className="w-full">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Login
+                {t("forgotPassword.backToLogin")}
               </Button>
             </Link>
           </div>
@@ -57,6 +59,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 via-violet-50/30 to-zinc-100 p-4">
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher variant="compact" />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/50 p-8">
           {/* Header */}
@@ -65,21 +72,21 @@ export default function ForgotPasswordPage() {
               <Mail className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900 mb-2">
-              Forgot password?
+              {t("forgotPassword.title")}
             </h1>
             <p className="text-zinc-500">
-              No worries, we'll send you reset instructions.
+              {t("forgotPassword.description")}
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
+              <Label htmlFor="email">{t("forgotPassword.emailAddress")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t("forgotPassword.enterEmail")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -91,7 +98,7 @@ export default function ForgotPasswordPage() {
               className="w-full"
               disabled={requestReset.isPending}
             >
-              {requestReset.isPending ? "Sending..." : "Send Reset Link"}
+              {requestReset.isPending ? t("forgotPassword.sending") : t("forgotPassword.sendResetLink")}
             </Button>
           </form>
 
@@ -102,7 +109,7 @@ export default function ForgotPasswordPage() {
               className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to login
+              {t("forgotPassword.backToLogin")}
             </Link>
           </div>
         </div>

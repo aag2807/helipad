@@ -33,7 +33,7 @@ export default function MyBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const { t } = useTranslations();
+  const { t, translateError } = useTranslations();
 
   // Query bookings
   const { data, isLoading } = trpc.bookings.getMyBookings.useQuery({
@@ -75,7 +75,7 @@ export default function MyBookingsPage() {
       toast({
         type: "error",
         title: t("notifications.updateFailed"),
-        description: error.message,
+        description: translateError(error.message),
       });
     },
   });
@@ -238,7 +238,7 @@ export default function MyBookingsPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-zinc-500">
-                Showing {transformedBookings.length} of {pagination.total} bookings
+                {t("common.showing")} {transformedBookings.length} {t("common.of")} {pagination.total} {t("myBookings.bookings")}
               </p>
               <Pagination
                 currentPage={pagination.page}
