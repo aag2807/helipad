@@ -144,7 +144,7 @@ function ResetPasswordForm() {
               {t("resetPassword.title")}
             </h1>
             <p className="text-zinc-500">
-              {t("resetPassword.description", { firstName: validation.firstName })}
+              {t("resetPassword.description", { firstName: validation.firstName ?? "" })}
             </p>
           </div>
 
