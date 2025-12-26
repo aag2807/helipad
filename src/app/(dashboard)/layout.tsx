@@ -13,7 +13,8 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
-  if (!session) {
+  // Redirect to login if no valid session
+  if (!session?.user) {
     redirect("/login");
   }
 

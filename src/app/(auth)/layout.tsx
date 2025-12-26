@@ -8,7 +8,8 @@ export default async function AuthLayout({
 }) {
   const session = await auth();
 
-  if (session) {
+  // Only redirect if there's a valid session
+  if (session?.user) {
     redirect("/bookings/calendar");
   }
 

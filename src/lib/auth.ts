@@ -6,6 +6,7 @@ import { users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true, // Required for Vercel deployments
   secret: process.env.AUTH_SECRET || "helipad-booking-secret-key-change-in-production",
   session: {
     strategy: "jwt",
