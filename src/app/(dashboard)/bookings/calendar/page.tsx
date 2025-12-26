@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 import { Plus, Wifi, WifiOff } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useCalendar } from "@/hooks/use-calendar";

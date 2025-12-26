@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 import { Calendar, History, Plus, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useTranslations } from "@/hooks/use-translations";

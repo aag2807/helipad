@@ -1,19 +1,19 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { ToastContainer } from "@/components/ui/toast";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  // Redirect to login if no valid session
+  // Get session - middleware ensures user is authenticated
+  const session = await getSession();
+  
   if (!session?.user) {
     redirect("/login");
   }

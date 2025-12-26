@@ -3,13 +3,13 @@ import { type FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { db } from "@/server/db";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 /**
  * Context creation for tRPC
  */
 export const createTRPCContext = async (opts: FetchCreateContextFnOptions) => {
-  const session = await auth();
+  const session = await getSession();
 
   return {
     db,

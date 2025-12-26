@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toast";
+import { useSession, signOut } from "@/lib/auth-client";
 
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -35,7 +36,8 @@ type ProfileData = z.infer<typeof profileSchema>;
 type PasswordData = z.infer<typeof passwordSchema>;
 
 export default function ProfilePage() {
-  const { data: session, update } = useSession();
+  const router = useRouter();
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
   const { t } = useTranslations();
 
@@ -63,7 +65,7 @@ export default function ProfilePage() {
 
   const updateProfile = trpc.auth.updateProfile.useMutation({
     onSuccess: () => {
-      update();
+      router.refresh();
       toast({ type: "success", title: t("profile.profileUpdated") });
     },
     onError: (error) => {
@@ -80,6 +82,12 @@ export default function ProfilePage() {
       toast({ type: "error", title: t("common.error"), description: error.message });
     },
   });
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   const onProfileSubmit = (data: ProfileData) => {
     updateProfile.mutate(data);
@@ -280,7 +288,7 @@ export default function ProfilePage() {
             </p>
             <Button
               variant="destructive"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={handleSignOut}
             >
               <LogOut className="w-4 h-4" />
               {t("auth.signOut")}
@@ -291,4 +299,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

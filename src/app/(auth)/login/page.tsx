@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,9 +9,11 @@ import { Loader2, Plane } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/lib/validations";
 import { useTranslations } from "@/hooks/use-translations";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { signIn } from "@/lib/auth-client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslations();
@@ -34,20 +35,15 @@ export default function LoginPage() {
     const password = data.password.trim();
 
     try {
-      const result = await signIn("credentials", {
-        username,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        router.push("/bookings/calendar");
-        router.refresh();
-      }
-    } catch {
-      setError(t("auth.unexpectedError"));
+      await signIn(username, password);
+      
+      // Successful login - redirect
+      const callbackUrl = searchParams.get("callbackUrl") || "/bookings/calendar";
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err instanceof Error ? err.message : t("auth.unexpectedError"));
     } finally {
       setIsLoading(false);
     }
@@ -156,3 +152,14 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}

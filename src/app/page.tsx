@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export default async function HomePage() {
-  const session = await auth();
+  const session = await getSession();
 
-  if (session) {
+  if (session?.user) {
     redirect("/bookings/calendar");
   } else {
     redirect("/login");
