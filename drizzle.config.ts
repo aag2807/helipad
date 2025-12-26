@@ -5,7 +5,8 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "sqlite",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "helipad.db",
+    url: process.env.DATABASE_URL ?? "file:./helipad.db",
+    ...(process.env.DATABASE_AUTH_TOKEN && { authToken: process.env.DATABASE_AUTH_TOKEN }),
   },
 });
 
