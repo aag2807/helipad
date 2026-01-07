@@ -147,7 +147,10 @@ export function BookingForm({
 
   const handleFormSubmit = (data: BookingFormData) => {
     const [hours, minutes] = data.startTime.split(":").map(Number);
-    const startDate = setMinutes(setHours(new Date(data.date), hours), minutes);
+    
+    // Parse date string as local date (not UTC) to avoid timezone issues
+    const [year, month, day] = data.date.split("-").map(Number);
+    const startDate = new Date(year, month - 1, day, hours, minutes);
     const endDate = addMinutes(startDate, data.duration);
 
     onSubmit({
