@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Loader2, Calendar, Clock, User, Phone, FileText, X } from "lucide-react";
+import { Loader2, Calendar, Clock, User, Phone, FileText, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,9 +38,13 @@ interface BookingDetailsProps {
   onOpenChange: (open: boolean) => void;
   onCancel: () => void;
   onEdit: () => void;
+  onApprove?: () => void;
+  onReject?: () => void;
   isOwner: boolean;
   isAdmin: boolean;
   isCancelling?: boolean;
+  isApproving?: boolean;
+  isRejecting?: boolean;
 }
 
 export function BookingDetails({
@@ -49,9 +53,13 @@ export function BookingDetails({
   onOpenChange,
   onCancel,
   onEdit,
+  onApprove,
+  onReject,
   isOwner,
   isAdmin,
   isCancelling,
+  isApproving,
+  isRejecting,
 }: BookingDetailsProps) {
   const { t, locale } = useTranslations();
   const dateLocale = locale === "es" ? es : enUS;
@@ -62,6 +70,8 @@ export function BookingDetails({
   const endTime = new Date(booking.endTime);
   const isPast = endTime < new Date();
   const canModify = (isOwner || isAdmin) && !isPast && booking.status === "confirmed";
+  const isPending = booking.status === "pending";
+  const canApproveReject = isAdmin && isPending && !isPast;
 
   const statusLabels: Record<string, string> = {
     confirmed: t("bookingStatus.confirmed"),
@@ -82,6 +92,8 @@ export function BookingDetails({
                   ? "success"
                   : booking.status === "cancelled"
                   ? "destructive"
+                  : booking.status === "pending"
+                  ? "warning"
                   : "secondary"
               }
             >
@@ -171,6 +183,41 @@ export function BookingDetails({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {t("common.close")}
           </Button>
+          
+          {/* Admin approve/reject buttons for pending bookings */}
+          {canApproveReject && (
+            <>
+              <Button
+                type="button"
+                variant="default"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={onApprove}
+                disabled={isApproving || isRejecting}
+              >
+                {isApproving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                {t("common.approve")}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={onReject}
+                disabled={isApproving || isRejecting}
+              >
+                {isRejecting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <X className="w-4 h-4" />
+                )}
+                {t("common.reject")}
+              </Button>
+            </>
+          )}
+          
+          {/* Edit/Cancel buttons for confirmed bookings */}
           {canModify && (
             <>
               <Button

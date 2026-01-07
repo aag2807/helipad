@@ -60,7 +60,7 @@ export function MonthView({
   const getBookingsForDay = (date: Date) => {
     return bookings.filter((booking) => {
       const bookingDate = new Date(booking.startTime);
-      return booking.status === "confirmed" && isSameDay(bookingDate, date);
+      return (booking.status === "confirmed" || booking.status === "pending") && isSameDay(bookingDate, date);
     });
   };
 
@@ -130,12 +130,15 @@ export function MonthView({
                     }}
                     className={cn(
                       "w-full text-left text-xs px-2 py-1 rounded truncate transition-all hover:ring-1",
-                      booking.userId === currentUserId
+                      booking.status === "pending"
+                        ? "bg-amber-100 text-amber-800 hover:ring-amber-300 border border-amber-300 border-dashed"
+                        : booking.userId === currentUserId
                         ? "bg-violet-100 text-violet-800 hover:ring-violet-300"
                         : "bg-zinc-100 text-zinc-700 hover:ring-zinc-300"
                     )}
                   >
                     {format(new Date(booking.startTime), "h:mm a", { locale: dateLocale })}
+                    {booking.status === "pending" && " *"}
                   </button>
                 ))}
                 {dayBookings.length > 3 && (

@@ -83,15 +83,25 @@ export default function CalendarPage() {
   const utils = trpc.useUtils();
 
   const createBooking = trpc.bookings.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       utils.bookings.getByDateRange.invalidate();
       setIsBookingFormOpen(false);
       setInitialSlot(null);
-      toast({
-        type: "success",
-        title: t("notifications.bookingConfirmed"),
-        description: t("notifications.bookingConfirmedDescription"),
-      });
+      
+      // Show different messages based on booking status
+      if (data.status === "pending") {
+        toast({
+          type: "success",
+          title: t("notifications.bookingPending"),
+          description: t("notifications.bookingPendingDescription"),
+        });
+      } else {
+        toast({
+          type: "success",
+          title: t("notifications.bookingConfirmed"),
+          description: t("notifications.bookingConfirmedDescription"),
+        });
+      }
     },
     onError: (error) => {
       toast({
@@ -116,6 +126,44 @@ export default function CalendarPage() {
       toast({
         type: "error",
         title: t("notifications.cancellationFailed"),
+        description: translateError(error.message),
+      });
+    },
+  });
+
+  const approveBooking = trpc.bookings.approve.useMutation({
+    onSuccess: () => {
+      utils.bookings.getByDateRange.invalidate();
+      setSelectedBooking(null);
+      toast({
+        type: "success",
+        title: t("adminBookings.bookingApproved"),
+        description: t("adminBookings.bookingApprovedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("errors.generic"),
+        description: translateError(error.message),
+      });
+    },
+  });
+
+  const rejectBooking = trpc.bookings.reject.useMutation({
+    onSuccess: () => {
+      utils.bookings.getByDateRange.invalidate();
+      setSelectedBooking(null);
+      toast({
+        type: "success",
+        title: t("adminBookings.bookingRejected"),
+        description: t("adminBookings.bookingRejectedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("errors.generic"),
         description: translateError(error.message),
       });
     },
@@ -181,6 +229,18 @@ export default function CalendarPage() {
   const handleBookingCancel = () => {
     if (selectedBooking) {
       cancelBooking.mutate({ id: selectedBooking.id });
+    }
+  };
+
+  const handleBookingApprove = () => {
+    if (selectedBooking) {
+      approveBooking.mutate({ id: selectedBooking.id });
+    }
+  };
+
+  const handleBookingReject = () => {
+    if (selectedBooking) {
+      rejectBooking.mutate({ id: selectedBooking.id });
     }
   };
 
@@ -276,6 +336,10 @@ export default function CalendarPage() {
           <span className="text-zinc-600">{t("calendarPage.legend.myBookings")}</span>
         </div>
         <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-amber-100 border-2 border-amber-300 border-dashed" />
+          <span className="text-zinc-600">{t("calendarPage.legend.pendingBookings")}</span>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-zinc-100 border border-zinc-300" />
           <span className="text-zinc-600">{t("calendarPage.legend.otherBookings")}</span>
         </div>
@@ -307,9 +371,13 @@ export default function CalendarPage() {
         onOpenChange={(open) => !open && setSelectedBooking(null)}
         onCancel={handleBookingCancel}
         onEdit={handleEditBooking}
+        onApprove={handleBookingApprove}
+        onReject={handleBookingReject}
         isOwner={selectedBooking?.userId === currentUserId}
         isAdmin={isAdmin}
         isCancelling={cancelBooking.isPending}
+        isApproving={approveBooking.isPending}
+        isRejecting={rejectBooking.isPending}
       />
     </div>
   );

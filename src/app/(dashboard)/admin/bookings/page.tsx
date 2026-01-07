@@ -10,7 +10,8 @@ import {
   Calendar,
   Filter,
   Eye,
-  X
+  X,
+  Check
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useTranslations } from "@/hooks/use-translations";
@@ -42,9 +43,45 @@ export default function AdminBookingsPage() {
   const { data, isLoading, refetch } = trpc.bookings.listAll.useQuery({
     startDate: startDate ? new Date(startDate).toISOString() : undefined,
     endDate: endDate ? new Date(endDate).toISOString() : undefined,
-    status: (status as "confirmed" | "cancelled") || undefined,
+    status: (status as "pending" | "confirmed" | "cancelled") || undefined,
     page,
     limit: 20,
+  });
+
+  const approveBooking = trpc.bookings.approve.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast({
+        type: "success",
+        title: t("adminBookings.bookingApproved"),
+        description: t("adminBookings.bookingApprovedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("errors.generic"),
+        description: translateError(error.message),
+      });
+    },
+  });
+
+  const rejectBooking = trpc.bookings.reject.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast({
+        type: "success",
+        title: t("adminBookings.bookingRejected"),
+        description: t("adminBookings.bookingRejectedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("errors.generic"),
+        description: translateError(error.message),
+      });
+    },
   });
 
   const cancelBooking = trpc.bookings.cancel.useMutation({
@@ -188,6 +225,7 @@ export default function AdminBookingsPage() {
               }}
             >
               <option value="">{t("adminUsers.allStatus")}</option>
+              <option value="pending">{t("bookingStatus.pending")}</option>
               <option value="confirmed">{t("bookingStatus.confirmed")}</option>
               <option value="cancelled">{t("bookingStatus.cancelled")}</option>
             </Select>
@@ -271,25 +309,59 @@ export default function AdminBookingsPage() {
                     <TableCell>
                       <Badge
                         variant={
-                          booking.status === "confirmed" ? "success" : "destructive"
+                          booking.status === "confirmed" 
+                            ? "success" 
+                            : booking.status === "pending"
+                            ? "warning"
+                            : "destructive"
                         }
                       >
-                        {booking.status === "confirmed" ? t("bookingStatus.confirmed") : t("bookingStatus.cancelled")}
+                        {booking.status === "confirmed" 
+                          ? t("bookingStatus.confirmed") 
+                          : booking.status === "pending"
+                          ? t("bookingStatus.pending")
+                          : t("bookingStatus.cancelled")}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {booking.status === "confirmed" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => cancelBooking.mutate({ id: booking.id })}
-                          disabled={cancelBooking.isPending}
-                        >
-                          <X className="w-4 h-4" />
-                          {t("common.cancel")}
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {booking.status === "pending" && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                              onClick={() => approveBooking.mutate({ id: booking.id })}
+                              disabled={approveBooking.isPending || rejectBooking.isPending}
+                            >
+                              <Check className="w-4 h-4" />
+                              {t("common.approve")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => rejectBooking.mutate({ id: booking.id })}
+                              disabled={approveBooking.isPending || rejectBooking.isPending}
+                            >
+                              <X className="w-4 h-4" />
+                              {t("common.reject")}
+                            </Button>
+                          </>
+                        )}
+                        {booking.status === "confirmed" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => cancelBooking.mutate({ id: booking.id })}
+                            disabled={cancelBooking.isPending}
+                          >
+                            <X className="w-4 h-4" />
+                            {t("common.cancel")}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

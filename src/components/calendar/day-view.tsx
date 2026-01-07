@@ -57,7 +57,7 @@ export function DayView({
       const bookingEnd = new Date(booking.endTime);
 
       return (
-        booking.status === "confirmed" &&
+        (booking.status === "confirmed" || booking.status === "pending") &&
         (isWithinInterval(slotStart, { start: bookingStart, end: bookingEnd }) ||
           isWithinInterval(bookingStart, { start: slotStart, end: slotEnd }) ||
           (bookingStart <= slotStart && bookingEnd >= slotEnd))
@@ -126,7 +126,9 @@ export function DayView({
                         key={booking.id}
                         className={cn(
                           "h-full rounded-lg",
-                          booking.userId === currentUserId
+                          booking.status === "pending"
+                            ? "bg-amber-100 border-2 border-amber-300 border-dashed"
+                            : booking.userId === currentUserId
                             ? "bg-violet-100"
                             : "bg-zinc-100"
                         )}
@@ -143,7 +145,9 @@ export function DayView({
                       }}
                       className={cn(
                         "w-full rounded-lg p-3 text-left transition-all hover:ring-2 hover:ring-offset-1",
-                        booking.userId === currentUserId
+                        booking.status === "pending"
+                          ? "bg-amber-100 text-amber-800 hover:ring-amber-300 border-2 border-amber-300 border-dashed"
+                          : booking.userId === currentUserId
                           ? "bg-violet-100 text-violet-800 hover:ring-violet-300"
                           : "bg-zinc-100 text-zinc-700 hover:ring-zinc-300"
                       )}
@@ -152,6 +156,7 @@ export function DayView({
                         {booking.user
                           ? `${booking.user.firstName} ${booking.user.lastName}`
                           : t("calendar.booked")}
+                        {booking.status === "pending" && " (Pending)"}
                       </div>
                       <div className="text-sm opacity-75 mt-1">
                         {format(bookingStart, "h:mm a")} -{" "}

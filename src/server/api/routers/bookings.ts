@@ -21,8 +21,10 @@ export const bookingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const start = new Date(input.startDate);
       const end = new Date(input.endDate);
+      const isAdmin = ctx.session.user.role === "admin";
 
-      const bookingsList = await ctx.db
+      // Get confirmed bookings (visible to all users)
+      const confirmedBookings = await ctx.db
         .select({
           id: bookings.id,
           userId: bookings.userId,
@@ -47,7 +49,44 @@ export const bookingsRouter = createTRPCRouter({
         )
         .orderBy(bookings.startTime);
 
-      return bookingsList;
+      // Get pending bookings based on role
+      // Admins see all pending bookings, regular users only see their own
+      const pendingBookingsWhere = isAdmin
+        ? and(
+            eq(bookings.status, "pending"),
+            gte(bookings.startTime, start),
+            lte(bookings.endTime, end)
+          )
+        : and(
+            eq(bookings.status, "pending"),
+            eq(bookings.userId, ctx.session.user.id),
+            gte(bookings.startTime, start),
+            lte(bookings.endTime, end)
+          );
+
+      const pendingBookings = await ctx.db
+        .select({
+          id: bookings.id,
+          userId: bookings.userId,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
+          purpose: bookings.purpose,
+          status: bookings.status,
+          user: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          },
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .where(pendingBookingsWhere)
+        .orderBy(bookings.startTime);
+
+      // Combine and return all bookings
+      return [...confirmedBookings, ...pendingBookings].sort((a, b) => 
+        a.startTime.getTime() - b.startTime.getTime()
+      );
     }),
 
   /**
@@ -69,7 +108,7 @@ export const bookingsRouter = createTRPCRouter({
       const whereClause = and(
         eq(bookings.userId, ctx.session.user.id),
         upcoming
-          ? and(gte(bookings.endTime, now), eq(bookings.status, "confirmed"))
+          ? and(gte(bookings.endTime, now), sql`${bookings.status} IN ('confirmed', 'pending')`)
           : lt(bookings.endTime, now)
       );
 
@@ -186,6 +225,10 @@ export const bookingsRouter = createTRPCRouter({
         });
       }
 
+      // Non-admin users create pending bookings
+      const isAdmin = ctx.session.user.role === "admin";
+      const bookingStatus = isAdmin ? "confirmed" : "pending";
+
       const [newBooking] = await ctx.db
         .insert(bookings)
         .values({
@@ -195,10 +238,12 @@ export const bookingsRouter = createTRPCRouter({
           purpose: input.purpose,
           notes: input.notes,
           contactPhone: input.contactPhone,
+          status: bookingStatus,
         })
         .returning();
 
-      // Broadcast SSE event for real-time updates
+      // Broadcast SSE event for real-time calendar updates
+      // Admins will see pending bookings, regular users only see confirmed ones
       broadcastBookingCreated({
         id: newBooking.id,
         userId: newBooking.userId,
@@ -383,7 +428,7 @@ export const bookingsRouter = createTRPCRouter({
         startDate: z.string().datetime().optional(),
         endDate: z.string().datetime().optional(),
         userId: z.string().uuid().optional(),
-        status: z.enum(["confirmed", "cancelled"]).optional(),
+        status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(20),
       })
@@ -442,6 +487,214 @@ export const bookingsRouter = createTRPCRouter({
 
       return {
         bookings: bookingsList,
+        pagination: {
+          total: count,
+          page,
+          limit,
+          totalPages: Math.ceil(count / limit),
+        },
+      };
+    }),
+
+  /**
+   * Admin: Approve a pending booking
+   */
+  approve: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.query.bookings.findFirst({
+        where: eq(bookings.id, input.id),
+        with: {
+          user: {
+            columns: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+      }
+
+      if (existing.status !== "pending") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Only pending bookings can be approved",
+        });
+      }
+
+      // Check for conflicts again before approving
+      const conflicts = await ctx.db
+        .select({ id: bookings.id })
+        .from(bookings)
+        .where(
+          and(
+            eq(bookings.status, "confirmed"),
+            sql`${bookings.id} != ${input.id}`,
+            lt(bookings.startTime, existing.endTime),
+            gt(bookings.endTime, existing.startTime)
+          )
+        );
+
+      if (conflicts.length > 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This time slot now conflicts with an existing booking",
+        });
+      }
+
+      const [approved] = await ctx.db
+        .update(bookings)
+        .set({
+          status: "confirmed",
+          updatedAt: new Date(),
+        })
+        .where(eq(bookings.id, input.id))
+        .returning();
+
+      // Broadcast SSE event for real-time calendar updates
+      broadcastBookingCreated({
+        id: approved.id,
+        userId: approved.userId,
+        startTime: existing.startTime,
+        endTime: existing.endTime,
+      });
+
+      // Send confirmation email
+      if (existing.user?.email) {
+        sendBookingConfirmation({
+          userName: `${existing.user.firstName} ${existing.user.lastName}`,
+          userEmail: existing.user.email,
+          userId: existing.userId,
+          bookingId: approved.id,
+          date: format(existing.startTime, "EEEE, MMMM d, yyyy"),
+          startTime: format(existing.startTime, "h:mm a"),
+          endTime: format(existing.endTime, "h:mm a"),
+          purpose: existing.purpose,
+        }).catch((err) => console.error("Failed to send confirmation email:", err));
+      }
+
+      return approved;
+    }),
+
+  /**
+   * Admin: Reject a pending booking
+   */
+  reject: adminProcedure
+    .input(z.object({ 
+      id: z.string().uuid(),
+      reason: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.query.bookings.findFirst({
+        where: eq(bookings.id, input.id),
+        with: {
+          user: {
+            columns: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+      }
+
+      if (existing.status !== "pending") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Only pending bookings can be rejected",
+        });
+      }
+
+      const [rejected] = await ctx.db
+        .update(bookings)
+        .set({
+          status: "cancelled",
+          cancelledAt: new Date(),
+          cancelledBy: ctx.session.user.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(bookings.id, input.id))
+        .returning();
+
+      // Broadcast SSE event for real-time updates (removes pending booking from non-owner calendars)
+      broadcastBookingCancelled({
+        id: rejected.id,
+        userId: rejected.userId,
+        startTime: existing.startTime,
+        endTime: existing.endTime,
+      });
+
+      // Send rejection email (using cancellation template for now)
+      if (existing.user?.email) {
+        sendBookingCancellation({
+          userName: `${existing.user.firstName} ${existing.user.lastName}`,
+          userEmail: existing.user.email,
+          userId: existing.userId,
+          bookingId: rejected.id,
+          date: format(existing.startTime, "EEEE, MMMM d, yyyy"),
+          startTime: format(existing.startTime, "h:mm a"),
+          endTime: format(existing.endTime, "h:mm a"),
+          purpose: existing.purpose,
+        }).catch((err) => console.error("Failed to send rejection email:", err));
+      }
+
+      return rejected;
+    }),
+
+  /**
+   * Admin: Get all pending bookings
+   */
+  getPending: adminProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).default(1),
+        limit: z.number().min(1).max(100).default(20),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, limit } = input;
+      const offset = (page - 1) * limit;
+
+      const [{ count }] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(bookings)
+        .where(eq(bookings.status, "pending"));
+
+      const pendingBookings = await ctx.db
+        .select({
+          id: bookings.id,
+          userId: bookings.userId,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
+          purpose: bookings.purpose,
+          notes: bookings.notes,
+          contactPhone: bookings.contactPhone,
+          status: bookings.status,
+          createdAt: bookings.createdAt,
+          user: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email,
+          },
+        })
+        .from(bookings)
+        .leftJoin(users, eq(bookings.userId, users.id))
+        .where(eq(bookings.status, "pending"))
+        .orderBy(bookings.createdAt)
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        bookings: pendingBookings,
         pagination: {
           total: count,
           page,

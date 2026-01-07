@@ -38,7 +38,9 @@
     "showingOf": "Mostrando {count} de {total}",
     "users": "usuarios",
     "bookingsFound": "reservas encontradas",
-    "bookingFound": "reserva encontrada"
+    "bookingFound": "reserva encontrada",
+    "approve": "Aprobar",
+    "reject": "Rechazar"
   },
 
   "auth": {
@@ -123,6 +125,7 @@
     "newBooking": "Nueva Reserva",
     "legend": {
       "myBookings": "Mis Reservas",
+      "pendingBookings": "Pendiente de Aprobación",
       "otherBookings": "Otras Reservas",
       "available": "Disponible"
     }
@@ -301,6 +304,10 @@
     "unknown": "Desconocido",
     "bookingCancelled": "Reserva cancelada",
     "bookingCancelledDescription": "La reserva ha sido cancelada.",
+    "bookingApproved": "Reserva aprobada",
+    "bookingApprovedDescription": "La reserva ha sido aprobada y confirmada.",
+    "bookingRejected": "Reserva rechazada",
+    "bookingRejectedDescription": "La reserva ha sido rechazada y cancelada.",
     "exportComplete": "Exportación completa",
     "exportedBookings": "Se exportaron {count} reservas a CSV."
   },
@@ -409,6 +416,8 @@
   "notifications": {
     "bookingConfirmed": "¡Reserva confirmada!",
     "bookingConfirmedDescription": "Tu horario del helipuerto ha sido reservado.",
+    "bookingPending": "¡Reserva enviada!",
+    "bookingPendingDescription": "Tu reserva está pendiente de aprobación del administrador.",
     "bookingFailed": "Reserva fallida",
     "bookingCancelled": "Reserva cancelada",
     "bookingCancelledDescription": "Tu reserva ha sido cancelada.",

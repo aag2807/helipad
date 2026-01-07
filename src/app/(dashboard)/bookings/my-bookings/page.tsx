@@ -57,6 +57,57 @@ export default function MyBookingsPage() {
       utils.bookings.getMyBookings.invalidate();
       setCancellingId(null);
       setSelectedBooking(null);
+      toast({
+        type: "success",
+        title: t("notifications.bookingCancelled"),
+        description: t("notifications.bookingCancelledDescription"),
+      });
+    },
+    onError: (error) => {
+      setCancellingId(null);
+      toast({
+        type: "error",
+        title: t("notifications.cancellationFailed"),
+        description: translateError(error.message),
+      });
+    },
+  });
+
+  const approveBooking = trpc.bookings.approve.useMutation({
+    onSuccess: () => {
+      utils.bookings.getMyBookings.invalidate();
+      setSelectedBooking(null);
+      toast({
+        type: "success",
+        title: t("adminBookings.bookingApproved"),
+        description: t("adminBookings.bookingApprovedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("errors.generic"),
+        description: translateError(error.message),
+      });
+    },
+  });
+
+  const rejectBooking = trpc.bookings.reject.useMutation({
+    onSuccess: () => {
+      utils.bookings.getMyBookings.invalidate();
+      setSelectedBooking(null);
+      toast({
+        type: "success",
+        title: t("adminBookings.bookingRejected"),
+        description: t("adminBookings.bookingRejectedDescription"),
+      });
+    },
+    onError: (error) => {
+      toast({
+        type: "error",
+        title: t("errors.generic"),
+        description: translateError(error.message),
+      });
     },
   });
 
@@ -284,9 +335,13 @@ export default function MyBookingsPage() {
           selectedBooking && handleCancel(selectedBooking.id)
         }
         onEdit={handleEditBooking}
+        onApprove={() => selectedBooking && approveBooking.mutate({ id: selectedBooking.id })}
+        onReject={() => selectedBooking && rejectBooking.mutate({ id: selectedBooking.id })}
         isOwner={true}
         isAdmin={session?.user?.role === "admin"}
         isCancelling={cancellingId === selectedBooking?.id}
+        isApproving={approveBooking.isPending}
+        isRejecting={rejectBooking.isPending}
       />
     </div>
   );

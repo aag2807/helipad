@@ -33,6 +33,7 @@ export function BookingCard({
   const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
   const isCancelled = booking.status === "cancelled";
+  const isPending = booking.status === "pending";
 
   return (
     <div
@@ -40,6 +41,8 @@ export function BookingCard({
         "bg-white rounded-xl border p-4 transition-all hover:shadow-md",
         isCancelled
           ? "border-red-200 bg-red-50/30"
+          : isPending
+          ? "border-yellow-200 bg-yellow-50/30"
           : isPast
           ? "border-zinc-200 opacity-75"
           : "border-zinc-200 hover:border-violet-200"
@@ -53,12 +56,20 @@ export function BookingCard({
               variant={
                 isCancelled
                   ? "destructive"
+                  : isPending
+                  ? "warning"
                   : isPast
                   ? "secondary"
                   : "success"
               }
             >
-              {isCancelled ? t("bookingStatus.cancelled") : isPast ? t("bookingStatus.completed") : t("bookingStatus.confirmed")}
+              {isCancelled 
+                ? t("bookingStatus.cancelled") 
+                : isPending
+                ? t("bookingStatus.pending")
+                : isPast 
+                ? t("bookingStatus.completed") 
+                : t("bookingStatus.confirmed")}
             </Badge>
             <span className="text-xs text-zinc-500">
               {format(startTime, "EEEE, MMM d, yyyy", { locale: dateLocale })}

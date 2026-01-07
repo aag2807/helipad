@@ -24,7 +24,7 @@ export const bookings = sqliteTable("bookings", {
   purpose: text("purpose").notNull(),
   notes: text("notes"),
   contactPhone: text("contact_phone"),
-  status: text("status", { enum: ["confirmed", "cancelled"] }).notNull().default("confirmed"),
+  status: text("status", { enum: ["pending", "confirmed", "cancelled"] }).notNull().default("confirmed"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   cancelledAt: integer("cancelled_at", { mode: "timestamp" }),

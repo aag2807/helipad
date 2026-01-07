@@ -38,7 +38,9 @@
     "showingOf": "Showing {count} of {total}",
     "users": "users",
     "bookingsFound": "bookings found",
-    "bookingFound": "booking found"
+    "bookingFound": "booking found",
+    "approve": "Approve",
+    "reject": "Reject"
   },
 
   "auth": {
@@ -123,6 +125,7 @@
     "newBooking": "New Booking",
     "legend": {
       "myBookings": "My Bookings",
+      "pendingBookings": "Pending Approval",
       "otherBookings": "Other Bookings",
       "available": "Available"
     }
@@ -301,6 +304,10 @@
     "unknown": "Unknown",
     "bookingCancelled": "Booking cancelled",
     "bookingCancelledDescription": "The booking has been cancelled.",
+    "bookingApproved": "Booking approved",
+    "bookingApprovedDescription": "The booking has been approved and confirmed.",
+    "bookingRejected": "Booking rejected",
+    "bookingRejectedDescription": "The booking has been rejected and cancelled.",
     "exportComplete": "Export complete",
     "exportedBookings": "Exported {count} bookings to CSV."
   },
@@ -409,6 +416,8 @@
   "notifications": {
     "bookingConfirmed": "Booking confirmed!",
     "bookingConfirmedDescription": "Your helipad slot has been reserved.",
+    "bookingPending": "Booking submitted!",
+    "bookingPendingDescription": "Your booking is pending admin approval.",
     "bookingFailed": "Booking failed",
     "bookingCancelled": "Booking cancelled",
     "bookingCancelledDescription": "Your booking has been cancelled.",
