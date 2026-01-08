@@ -5,6 +5,7 @@ import { bookingsRouter } from "./routers/bookings";
 import { settingsRouter } from "./routers/settings";
 import { statsRouter } from "./routers/stats";
 import { passwordResetRouter } from "./routers/password-reset";
+import { emailConfigRouter } from "./routers/email-config";
 
 /**
  * Root tRPC router combining all sub-routers
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   settings: settingsRouter,
   stats: statsRouter,
   passwordReset: passwordResetRouter,
+  emailConfig: emailConfigRouter,
 });
 
 export type AppRouter = typeof appRouter;

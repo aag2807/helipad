@@ -120,6 +120,9 @@ export function DayView({
                     bookingStart.getHours() === slot.hour &&
                     bookingStart.getMinutes() === slot.minute;
 
+                  const isOwnBooking = booking.userId === currentUserId;
+                  const canViewDetails = isOwnBooking;
+
                   if (!isStartSlot) {
                     return (
                       <div
@@ -128,7 +131,7 @@ export function DayView({
                           "h-full rounded-lg",
                           booking.status === "pending"
                             ? "bg-amber-100 border-2 border-amber-300 border-dashed"
-                            : booking.userId === currentUserId
+                            : isOwnBooking
                             ? "bg-violet-100"
                             : "bg-zinc-100"
                         )}
@@ -141,20 +144,22 @@ export function DayView({
                       key={booking.id}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onBookingClick(booking);
+                        if (canViewDetails) {
+                          onBookingClick(booking);
+                        }
                       }}
                       className={cn(
-                        "w-full rounded-lg p-3 text-left transition-all hover:ring-2 hover:ring-offset-1",
+                        "w-full rounded-lg p-3 text-left transition-all",
                         booking.status === "pending"
-                          ? "bg-amber-100 text-amber-800 hover:ring-amber-300 border-2 border-amber-300 border-dashed"
-                          : booking.userId === currentUserId
-                          ? "bg-violet-100 text-violet-800 hover:ring-violet-300"
-                          : "bg-zinc-100 text-zinc-700 hover:ring-zinc-300"
+                          ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed"
+                          : isOwnBooking
+                          ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer"
+                          : "bg-zinc-100 text-zinc-700 cursor-default"
                       )}
                     >
                       <div className="font-semibold">
-                        {booking.user
-                          ? `${booking.user.firstName} ${booking.user.lastName}`
+                        {isOwnBooking
+                          ? `${booking.user?.firstName || "You"} ${booking.user?.lastName || ""}`
                           : t("calendar.booked")}
                         {booking.status === "pending" && " (Pending)"}
                       </div>
@@ -162,9 +167,11 @@ export function DayView({
                         {format(bookingStart, "h:mm a")} -{" "}
                         {format(bookingEnd, "h:mm a")}
                       </div>
-                      <div className="text-sm mt-1 truncate">
-                        {booking.purpose}
-                      </div>
+                      {isOwnBooking && (
+                        <div className="text-sm mt-1 truncate">
+                          {booking.purpose}
+                        </div>
+                      )}
                     </button>
                   );
                 })}

@@ -10,6 +10,7 @@ import {
   Settings,
   Plane,
   LayoutDashboard,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
@@ -38,6 +39,7 @@ export function Sidebar({ user }: SidebarProps) {
       { label: t("navigation.users"), href: ROUTES.adminUsers, icon: Users },
       { label: t("navigation.allBookings"), href: ROUTES.adminBookings, icon: ClipboardList },
       { label: t("navigation.settings"), href: ROUTES.adminSettings, icon: Settings },
+      { label: t("navigation.email"), href: ROUTES.adminEmail, icon: Mail },
     ],
   };
 

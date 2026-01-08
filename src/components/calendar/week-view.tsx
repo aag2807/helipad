@@ -148,21 +148,26 @@ export function WeekView({
                     const durationHours =
                       (bookingEnd.getTime() - bookingStart.getTime()) /
                       (1000 * 60 * 60);
+                    
+                    const isOwnBooking = booking.userId === currentUserId;
+                    const canViewDetails = isOwnBooking; // Only owner can see details (admin will see details elsewhere)
 
                     return (
                       <button
                         key={booking.id}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onBookingClick(booking);
+                          if (canViewDetails) {
+                            onBookingClick(booking);
+                          }
                         }}
                         className={cn(
-                          "absolute inset-x-1 rounded-lg p-2 text-left text-xs font-medium transition-all hover:ring-2 hover:ring-offset-1 z-10",
+                          "absolute inset-x-1 rounded-lg p-2 text-left text-xs font-medium transition-all z-10",
                           booking.status === "pending"
-                            ? "bg-amber-100 text-amber-800 hover:ring-amber-300 border-2 border-amber-300 border-dashed"
-                            : booking.userId === currentUserId
-                            ? "bg-violet-100 text-violet-800 hover:ring-violet-300"
-                            : "bg-zinc-100 text-zinc-700 hover:ring-zinc-300"
+                            ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed"
+                            : isOwnBooking
+                            ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer"
+                            : "bg-zinc-100 text-zinc-700 cursor-default"
                         )}
                         style={{
                           top: "2px",
@@ -171,8 +176,8 @@ export function WeekView({
                         }}
                       >
                         <div className="font-semibold truncate">
-                          {booking.user
-                            ? `${booking.user.firstName} ${booking.user.lastName[0]}.`
+                          {isOwnBooking 
+                            ? `${booking.user?.firstName || "You"} ${booking.user?.lastName?.[0] || ""}.`
                             : t("calendar.booked")}
                           {booking.status === "pending" && " (Pending)"}
                         </div>

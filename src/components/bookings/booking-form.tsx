@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, addMinutes, setHours, setMinutes, differenceInMinutes } from "date-fns";
+import { format, addMinutes, setHours, setMinutes } from "date-fns";
 import { Loader2, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,10 +25,10 @@ import { useTranslations } from "@/hooks/use-translations";
 const bookingFormSchema = z.object({
   date: z.string().min(1, "Date is required"),
   startTime: z.string().min(1, "Start time is required"),
-  duration: z.number().min(15, "Minimum 15 minutes").max(240, "Maximum 4 hours"),
   purpose: z.string().min(1, "Purpose is required").max(500),
   notes: z.string().max(1000).optional(),
   contactPhone: z.string().max(20).optional(),
+  passengers: z.coerce.number().int().min(1, "At least 1 passenger").max(50, "Maximum 50 passengers").default(1),
 });
 
 type BookingFormData = z.infer<typeof bookingFormSchema>;
@@ -40,6 +40,7 @@ interface EditingBooking {
   purpose: string;
   notes?: string | null;
   contactPhone?: string | null;
+  passengers?: number | null;
 }
 
 interface BookingFormProps {
@@ -51,6 +52,7 @@ interface BookingFormProps {
     purpose: string;
     notes?: string;
     contactPhone?: string;
+    passengers: number;
   }) => void;
   isLoading?: boolean;
   initialDate?: Date;
@@ -70,18 +72,11 @@ export function BookingForm({
   editingBooking,
 }: BookingFormProps) {
   const { t } = useTranslations();
+  // Generate 15-minute time slots (10 min booking + 5 min buffer)
   const timeSlots = useMemo(() => generateTimeSlots(6, 22, 15), []);
-
-  const DURATION_OPTIONS = [
-    { value: 15, label: t("bookings.durations.15min") },
-    { value: 30, label: t("bookings.durations.30min") },
-    { value: 45, label: t("bookings.durations.45min") },
-    { value: 60, label: t("bookings.durations.1hour") },
-    { value: 90, label: t("bookings.durations.1_5hours") },
-    { value: 120, label: t("bookings.durations.2hours") },
-    { value: 180, label: t("bookings.durations.3hours") },
-    { value: 240, label: t("bookings.durations.4hours") },
-  ];
+  
+  // Fixed 10-minute duration
+  const FIXED_DURATION = 10;
 
   const {
     register,
@@ -91,9 +86,6 @@ export function BookingForm({
     formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingFormSchema),
-    defaultValues: {
-      duration: 60,
-    },
   });
 
   // Reset form when dialog opens with initial values or editing booking
@@ -102,16 +94,14 @@ export function BookingForm({
       if (editingBooking) {
         // Pre-fill form with existing booking data
         const startDate = new Date(editingBooking.startTime);
-        const endDate = new Date(editingBooking.endTime);
-        const duration = differenceInMinutes(endDate, startDate);
 
         reset({
           date: format(startDate, "yyyy-MM-dd"),
           startTime: `${startDate.getHours().toString().padStart(2, "0")}:${startDate.getMinutes().toString().padStart(2, "0")}`,
-          duration: duration,
           purpose: editingBooking.purpose,
           notes: editingBooking.notes || "",
           contactPhone: editingBooking.contactPhone || "",
+          passengers: editingBooking.passengers || 1,
         });
       } else {
         // New booking - use initial values
@@ -122,10 +112,10 @@ export function BookingForm({
         reset({
           date: format(date, "yyyy-MM-dd"),
           startTime: `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
-          duration: 60,
           purpose: "",
           notes: "",
           contactPhone: "",
+          passengers: 1,
         });
       }
     }
@@ -133,17 +123,18 @@ export function BookingForm({
 
   const watchedDate = watch("date");
   const watchedStartTime = watch("startTime");
-  const watchedDuration = watch("duration");
 
+  // Calculate end time (fixed 10 minutes)
   const endTime = useMemo(() => {
-    if (!watchedDate || !watchedStartTime || !watchedDuration) return null;
+    if (!watchedDate || !watchedStartTime) return null;
 
     const [hours, minutes] = watchedStartTime.split(":").map(Number);
-    const startDate = setMinutes(setHours(new Date(watchedDate), hours), minutes);
-    const endDate = addMinutes(startDate, watchedDuration);
+    const [year, month, day] = watchedDate.split("-").map(Number);
+    const startDate = new Date(year, month - 1, day, hours, minutes);
+    const endDate = addMinutes(startDate, FIXED_DURATION);
 
     return format(endDate, "h:mm a");
-  }, [watchedDate, watchedStartTime, watchedDuration]);
+  }, [watchedDate, watchedStartTime]);
 
   const handleFormSubmit = (data: BookingFormData) => {
     const [hours, minutes] = data.startTime.split(":").map(Number);
@@ -151,7 +142,7 @@ export function BookingForm({
     // Parse date string as local date (not UTC) to avoid timezone issues
     const [year, month, day] = data.date.split("-").map(Number);
     const startDate = new Date(year, month - 1, day, hours, minutes);
-    const endDate = addMinutes(startDate, data.duration);
+    const endDate = addMinutes(startDate, FIXED_DURATION);
 
     onSubmit({
       startTime: startDate.toISOString(),
@@ -159,6 +150,7 @@ export function BookingForm({
       purpose: data.purpose,
       notes: data.notes || undefined,
       contactPhone: data.contactPhone || undefined,
+      passengers: data.passengers,
     });
   };
 
@@ -197,56 +189,51 @@ export function BookingForm({
               )}
             </div>
 
-            {/* Time row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="startTime" required>
-                  {t("bookings.startTime")}
-                </Label>
-                <div className="relative">
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                  <Select
-                    id="startTime"
-                    {...register("startTime")}
-                    error={!!errors.startTime}
-                    className="pl-10"
-                  >
-                    {timeSlots.map((slot) => (
-                      <option
-                        key={`${slot.hour}-${slot.minute}`}
-                        value={`${slot.hour.toString().padStart(2, "0")}:${slot.minute.toString().padStart(2, "0")}`}
-                      >
-                        {slot.label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="duration" required>
-                  {t("bookings.duration")}
-                </Label>
+            {/* Time row - single column since duration is fixed */}
+            <div className="space-y-2">
+              <Label htmlFor="startTime" required>
+                {t("bookings.startTime")}
+              </Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <Select
-                  id="duration"
-                  {...register("duration", { valueAsNumber: true })}
-                  error={!!errors.duration}
+                  id="startTime"
+                  {...register("startTime")}
+                  error={!!errors.startTime}
+                  className="pl-10"
                 >
-                  {DURATION_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                  {timeSlots.map((slot) => (
+                    <option
+                      key={`${slot.hour}-${slot.minute}`}
+                      value={`${slot.hour.toString().padStart(2, "0")}:${slot.minute.toString().padStart(2, "0")}`}
+                    >
+                      {slot.label}
                     </option>
                   ))}
                 </Select>
               </div>
+              {errors.startTime && (
+                <p className="text-xs text-red-600">{errors.startTime.message}</p>
+              )}
             </div>
 
-            {/* End time preview */}
+            {/* Duration info and end time preview */}
             {endTime && (
-              <div className="flex items-center gap-2 p-3 bg-violet-50 rounded-xl text-sm">
-                <Clock className="w-4 h-4 text-violet-600" />
-                <span className="text-violet-700">
-                  {t("bookings.bookingEndsAt")} <strong>{endTime}</strong>
-                </span>
+              <div className="p-3 bg-violet-50 rounded-xl">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-violet-600" />
+                    <span className="text-violet-700">
+                      <strong>{t("bookings.fixedDuration")}</strong> {t("bookings.fixedDurationBooking")}
+                    </span>
+                  </div>
+                  <span className="text-violet-700">
+                    {t("bookings.endsAt")} <strong>{endTime}</strong>
+                  </span>
+                </div>
+                <p className="text-xs text-violet-600">
+                  {t("bookings.bufferInfo")}
+                </p>
               </div>
             )}
 
@@ -287,6 +274,25 @@ export function BookingForm({
                 {...register("contactPhone")}
                 placeholder="+1 (555) 000-0000"
               />
+            </div>
+
+            {/* Passengers */}
+            <div className="space-y-2">
+              <Label htmlFor="passengers" required>
+                {t("bookings.passengers")}
+              </Label>
+              <Input
+                id="passengers"
+                type="number"
+                min="1"
+                max="50"
+                {...register("passengers")}
+                error={!!errors.passengers}
+                placeholder={t("bookings.passengersPlaceholder")}
+              />
+              {errors.passengers && (
+                <p className="text-xs text-red-600">{errors.passengers.message}</p>
+              )}
             </div>
           </DialogBody>
 

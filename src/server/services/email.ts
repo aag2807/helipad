@@ -1,14 +1,72 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
 import { db } from "@/server/db";
-import { emailLogs } from "@/server/db/schema";
+import { emailLogs, emailConfigurations } from "@/server/db/schema";
+import { eq } from "drizzle-orm";
 
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-const FROM_EMAIL = process.env.EMAIL_FROM || "noreply@helipad.local";
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Helipad Booking";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+let cachedTransporter: Transporter | null = null;
+let cachedConfig: any | null = null;
+
+/**
+ * Get email configuration from database
+ */
+async function getEmailConfig() {
+  const config = await db.query.emailConfigurations.findFirst({
+    where: eq(emailConfigurations.isActive, true),
+  });
+
+  return config;
+}
+
+/**
+ * Create nodemailer transporter from configuration
+ */
+async function getTransporter(): Promise<Transporter | null> {
+  try {
+    const config = await getEmailConfig();
+
+    if (!config) {
+      console.log("[Email] No active email configuration found");
+      return null;
+    }
+
+    // Check if config changed, if not return cached transporter
+    if (cachedTransporter && cachedConfig?.id === config.id) {
+      return cachedTransporter;
+    }
+
+    // SMTP configuration
+    if (config.provider === "smtp") {
+      if (!config.smtpHost || !config.smtpPort || !config.smtpUser || !config.smtpPassword) {
+        console.log("[Email] SMTP configuration incomplete");
+        return null;
+      }
+
+      cachedTransporter = nodemailer.createTransport({
+        host: config.smtpHost,
+        port: config.smtpPort,
+        secure: config.smtpSecure ?? true, // true for 465, false for other ports
+        auth: {
+          user: config.smtpUser,
+          pass: config.smtpPassword,
+        },
+      });
+
+      cachedConfig = config;
+      console.log(`[Email] SMTP transporter created for ${config.smtpHost}`);
+      return cachedTransporter;
+    }
+
+    console.log("[Email] Unsupported email provider:", config.provider);
+    return null;
+  } catch (error) {
+    console.error("[Email] Failed to create transporter:", error);
+    return null;
+  }
+}
 
 interface SendEmailOptions {
   to: string;
@@ -37,30 +95,32 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     }
   };
 
-  // If Resend is not configured, log and skip
-  if (!resend) {
-    console.log(`[Email] Resend not configured. Would send to ${to}:`);
-    console.log(`  Subject: ${subject}`);
-    console.log(`  Type: ${type}`);
-    await logEmail("sent"); // Log as sent for dev purposes
-    return true;
-  }
-
   try {
-    const { error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const transporter = await getTransporter();
+
+    // If no transporter configured, log and skip
+    if (!transporter) {
+      console.log(`[Email] Email service not configured. Would send to ${to}:`);
+      console.log(`  Subject: ${subject}`);
+      console.log(`  Type: ${type}`);
+      await logEmail("sent"); // Log as sent for dev purposes
+      return true;
+    }
+
+    const config = await getEmailConfig();
+    if (!config) {
+      await logEmail("failed", "No email configuration found");
+      return false;
+    }
+
+    const info = await transporter.sendMail({
+      from: `"${config.fromName}" <${config.fromEmail}>`,
       to,
       subject,
       html,
     });
 
-    if (error) {
-      console.error("[Email] Failed to send:", error);
-      await logEmail("failed", error.message);
-      return false;
-    }
-
-    console.log(`[Email] Sent ${type} email to ${to}`);
+    console.log(`[Email] Sent ${type} email to ${to}. Message ID: ${info.messageId}`);
     await logEmail("sent");
     return true;
   } catch (error) {
@@ -262,4 +322,3 @@ export async function sendBookingReminder(data: BookingEmailData): Promise<boole
     type: "reminder",
   });
 }
-

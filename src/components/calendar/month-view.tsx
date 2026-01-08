@@ -121,26 +121,35 @@ export function MonthView({
 
               {/* Bookings */}
               <div className="space-y-1">
-                {dayBookings.slice(0, 3).map((booking) => (
-                  <button
-                    key={booking.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onBookingClick(booking);
-                    }}
-                    className={cn(
-                      "w-full text-left text-xs px-2 py-1 rounded truncate transition-all hover:ring-1",
-                      booking.status === "pending"
-                        ? "bg-amber-100 text-amber-800 hover:ring-amber-300 border border-amber-300 border-dashed"
-                        : booking.userId === currentUserId
-                        ? "bg-violet-100 text-violet-800 hover:ring-violet-300"
-                        : "bg-zinc-100 text-zinc-700 hover:ring-zinc-300"
-                    )}
-                  >
-                    {format(new Date(booking.startTime), "h:mm a", { locale: dateLocale })}
-                    {booking.status === "pending" && " *"}
-                  </button>
-                ))}
+                {dayBookings.slice(0, 3).map((booking) => {
+                  const isOwnBooking = booking.userId === currentUserId;
+                  const canViewDetails = isOwnBooking;
+                  
+                  return (
+                    <button
+                      key={booking.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (canViewDetails) {
+                          onBookingClick(booking);
+                        }
+                      }}
+                      className={cn(
+                        "w-full text-left text-xs px-2 py-1 rounded truncate transition-all",
+                        booking.status === "pending"
+                          ? "bg-amber-100 text-amber-800 border border-amber-300 border-dashed"
+                          : isOwnBooking
+                          ? "bg-violet-100 text-violet-800 hover:ring-1 hover:ring-violet-300 cursor-pointer"
+                          : "bg-zinc-100 text-zinc-700 cursor-default"
+                      )}
+                    >
+                      {isOwnBooking 
+                        ? format(new Date(booking.startTime), "h:mm a", { locale: dateLocale })
+                        : t("calendar.booked")}
+                      {booking.status === "pending" && " *"}
+                    </button>
+                  );
+                })}
                 {dayBookings.length > 3 && (
                   <div className="text-xs text-zinc-500 pl-2">
                     +{dayBookings.length - 3} {t("calendar.more")}

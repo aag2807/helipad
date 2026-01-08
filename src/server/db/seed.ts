@@ -1,5 +1,5 @@
 import { db } from "./index";
-import { users, settings } from "./schema";
+import { users, settings, emailConfigurations } from "./schema";
 import bcrypt from "bcrypt";
 
 async function seed() {
@@ -90,6 +90,24 @@ async function seed() {
       await db.insert(settings).values(setting);
       console.log(`✅ Created setting: ${setting.key}`);
     }
+  }
+
+  // Seed default email configuration
+  const existingEmailConfig = await db.query.emailConfigurations.findFirst();
+  
+  if (!existingEmailConfig) {
+    await db.insert(emailConfigurations).values({
+      provider: "smtp",
+      smtpHost: process.env.SMTP_HOST || "smtp.gmail.com",
+      smtpPort: parseInt(process.env.SMTP_PORT || "587"),
+      smtpSecure: process.env.SMTP_SECURE === "true",
+      smtpUser: process.env.SMTP_USER || "",
+      smtpPassword: process.env.SMTP_PASSWORD || "",
+      fromEmail: process.env.EMAIL_FROM || "noreply@helipad.local",
+      fromName: process.env.EMAIL_FROM_NAME || "Helipad Booking",
+      isActive: true,
+    });
+    console.log("✅ Created default email configuration");
   }
 
   console.log("🎉 Seed completed!");

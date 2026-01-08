@@ -15,6 +15,13 @@
       "when": 1766702078947,
       "tag": "0001_red_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1767875267408,
+      "tag": "0002_futuristic_bill_hollister",
+      "breakpoints": true
     }
   ]
 }

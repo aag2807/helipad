@@ -179,6 +179,7 @@ export const bookingsRouter = createTRPCRouter({
         purpose: z.string().min(1).max(500),
         notes: z.string().max(1000).optional(),
         contactPhone: z.string().max(20).optional(),
+        passengers: z.number().int().min(1).max(50).default(1),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -206,22 +207,30 @@ export const bookingsRouter = createTRPCRouter({
         });
       }
 
-      // Check for conflicts
+      // Check for conflicts (including 5-minute buffer after each booking)
+      const BUFFER_MINUTES = 5;
+      const endWithBuffer = new Date(end.getTime() + BUFFER_MINUTES * 60 * 1000);
+      
       const conflicts = await ctx.db
-        .select({ id: bookings.id })
+        .select({ 
+          id: bookings.id,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
+        })
         .from(bookings)
         .where(
           and(
             eq(bookings.status, "confirmed"),
-            lt(bookings.startTime, end),
-            gt(bookings.endTime, start)
+            // Check if new booking (with its buffer) overlaps with existing booking (with its buffer)
+            lt(bookings.startTime, endWithBuffer),
+            gt(sql`datetime(${bookings.endTime}, '+5 minutes')`, start)
           )
         );
 
       if (conflicts.length > 0) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "This time slot conflicts with an existing booking",
+          message: "This time slot conflicts with an existing booking (including 5-minute buffer)",
         });
       }
 
@@ -238,6 +247,7 @@ export const bookingsRouter = createTRPCRouter({
           purpose: input.purpose,
           notes: input.notes,
           contactPhone: input.contactPhone,
+          passengers: input.passengers,
           status: bookingStatus,
         })
         .returning();
@@ -316,22 +326,30 @@ export const bookingsRouter = createTRPCRouter({
           });
         }
 
+        // Check for conflicts (including 5-minute buffer)
+        const BUFFER_MINUTES = 5;
+        const endWithBuffer = new Date(end.getTime() + BUFFER_MINUTES * 60 * 1000);
+
         const conflicts = await ctx.db
-          .select({ id: bookings.id })
+          .select({ 
+            id: bookings.id,
+            startTime: bookings.startTime,
+            endTime: bookings.endTime,
+          })
           .from(bookings)
           .where(
             and(
               eq(bookings.status, "confirmed"),
               sql`${bookings.id} != ${id}`,
-              lt(bookings.startTime, end),
-              gt(bookings.endTime, start)
+              lt(bookings.startTime, endWithBuffer),
+              gt(sql`datetime(${bookings.endTime}, '+5 minutes')`, start)
             )
           );
 
         if (conflicts.length > 0) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "This time slot conflicts with an existing booking",
+            message: "This time slot conflicts with an existing booking (including 5-minute buffer)",
           });
         }
       }
@@ -526,23 +544,30 @@ export const bookingsRouter = createTRPCRouter({
         });
       }
 
-      // Check for conflicts again before approving
+      // Check for conflicts again before approving (including 5-minute buffer)
+      const BUFFER_MINUTES = 5;
+      const endWithBuffer = new Date(existing.endTime.getTime() + BUFFER_MINUTES * 60 * 1000);
+      
       const conflicts = await ctx.db
-        .select({ id: bookings.id })
+        .select({ 
+          id: bookings.id,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
+        })
         .from(bookings)
         .where(
           and(
             eq(bookings.status, "confirmed"),
             sql`${bookings.id} != ${input.id}`,
-            lt(bookings.startTime, existing.endTime),
-            gt(bookings.endTime, existing.startTime)
+            lt(bookings.startTime, endWithBuffer),
+            gt(sql`datetime(${bookings.endTime}, '+5 minutes')`, existing.startTime)
           )
         );
 
       if (conflicts.length > 0) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "This time slot now conflicts with an existing booking",
+          message: "This time slot now conflicts with an existing booking (including 5-minute buffer)",
         });
       }
 

@@ -24,6 +24,7 @@ export const bookings = sqliteTable("bookings", {
   purpose: text("purpose").notNull(),
   notes: text("notes"),
   contactPhone: text("contact_phone"),
+  passengers: integer("passengers").notNull().default(1),
   status: text("status", { enum: ["pending", "confirmed", "cancelled"] }).notNull().default("confirmed"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -36,6 +37,23 @@ export const settings = sqliteTable("settings", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   key: text("key").notNull().unique(),
   value: text("value").notNull(), // JSON string
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// Email configurations table
+export const emailConfigurations = sqliteTable("email_configurations", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  provider: text("provider", { enum: ["smtp", "resend"] }).notNull().default("smtp"),
+  smtpHost: text("smtp_host"),
+  smtpPort: integer("smtp_port"),
+  smtpSecure: integer("smtp_secure", { mode: "boolean" }).default(true),
+  smtpUser: text("smtp_user"),
+  smtpPassword: text("smtp_password"),
+  fromEmail: text("from_email").notNull(),
+  fromName: text("from_name").notNull(),
+  resendApiKey: text("resend_api_key"),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
@@ -103,6 +121,8 @@ export type NewUser = typeof users.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
 export type NewBooking = typeof bookings.$inferInsert;
 export type Setting = typeof settings.$inferSelect;
+export type EmailConfiguration = typeof emailConfigurations.$inferSelect;
+export type NewEmailConfiguration = typeof emailConfigurations.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
