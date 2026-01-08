@@ -25,6 +25,7 @@ interface WeekViewProps {
   days: Date[];
   bookings: Booking[];
   currentUserId: string;
+  isAdmin?: boolean;
   startHour?: number;
   endHour?: number;
   onSlotClick: (date: Date, hour: number, minute: number) => void;
@@ -35,6 +36,7 @@ export function WeekView({
   days,
   bookings,
   currentUserId,
+  isAdmin = false,
   startHour = 6,
   endHour = 22,
   onSlotClick,
@@ -148,7 +150,7 @@ export function WeekView({
                     const bookingEnd = new Date(booking.endTime);
                     
                     const isOwnBooking = booking.userId === currentUserId;
-                    const canViewDetails = isOwnBooking;
+                    const canViewDetails = isOwnBooking || isAdmin;
 
                     return (
                       <button
@@ -162,16 +164,18 @@ export function WeekView({
                         className={cn(
                           "w-full rounded-lg p-1.5 text-left text-xs font-medium transition-all",
                           booking.status === "pending"
-                            ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed"
+                            ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed hover:ring-2 hover:ring-offset-1 hover:ring-amber-400 cursor-pointer"
                             : isOwnBooking
                             ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer"
+                            : isAdmin
+                            ? "bg-blue-100 text-blue-800 hover:ring-2 hover:ring-offset-1 hover:ring-blue-300 cursor-pointer"
                             : "bg-zinc-100 text-zinc-700 cursor-default"
                         )}
                       >
                         <div className="font-semibold truncate text-[10px]">
                           {isOwnBooking 
                             ? `${booking.user?.firstName || "You"} ${booking.user?.lastName?.[0] || ""}.`
-                            : t("calendar.booked")}
+                            : `${booking.user?.firstName || "User"} ${booking.user?.lastName?.[0] || ""}.`}
                           {booking.status === "pending" && " *"}
                         </div>
                         <div className="text-[9px] opacity-75 truncate">

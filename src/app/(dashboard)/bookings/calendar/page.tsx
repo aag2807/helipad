@@ -304,6 +304,7 @@ export default function CalendarPage() {
               days={calendar.days}
               bookings={transformedBookings}
               currentUserId={currentUserId}
+              isAdmin={isAdmin}
               onSlotClick={handleSlotClick}
               onBookingClick={handleBookingClick}
             />
@@ -313,6 +314,7 @@ export default function CalendarPage() {
               date={calendar.currentDate}
               bookings={transformedBookings}
               currentUserId={currentUserId}
+              isAdmin={isAdmin}
               onSlotClick={handleSlotClick}
               onBookingClick={handleBookingClick}
             />
@@ -322,6 +324,7 @@ export default function CalendarPage() {
               currentDate={calendar.currentDate}
               bookings={transformedBookings}
               currentUserId={currentUserId}
+              isAdmin={isAdmin}
               onDayClick={handleDayClick}
               onBookingClick={handleBookingClick}
             />
