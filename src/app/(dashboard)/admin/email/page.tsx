@@ -33,7 +33,7 @@ export default function EmailSettingsPage() {
   const emailConfigSchema = z.object({
     provider: z.enum(["smtp", "resend"]),
     smtpHost: z.string().min(1, t("emailSettings.smtpHostRequired")),
-    smtpPort: z.coerce.number().int().min(1).max(65535, t("emailSettings.smtpPortInvalid")),
+    smtpPort: z.number().int().min(1).max(65535, t("emailSettings.smtpPortInvalid")),
     smtpSecure: z.boolean(),
     smtpUser: z.string().min(1, t("emailSettings.smtpUserRequired")),
     smtpPassword: z.string().min(1, t("emailSettings.smtpPasswordRequired")),
@@ -201,7 +201,7 @@ export default function EmailSettingsPage() {
                 id="smtpHost"
                 {...register("smtpHost")}
                 placeholder={t("emailSettings.hostPlaceholder")}
-                error={errors.smtpHost?.message}
+                error={!!errors.smtpHost}
               />
             </div>
 
@@ -212,9 +212,9 @@ export default function EmailSettingsPage() {
               <Input
                 id="smtpPort"
                 type="number"
-                {...register("smtpPort")}
+                {...register("smtpPort", { valueAsNumber: true })}
                 placeholder={t("emailSettings.portPlaceholder")}
-                error={errors.smtpPort?.message}
+                error={!!errors.smtpPort}
               />
             </div>
 
@@ -252,7 +252,7 @@ export default function EmailSettingsPage() {
                 id="smtpUser"
                 {...register("smtpUser")}
                 placeholder={t("emailSettings.usernamePlaceholder")}
-                error={errors.smtpUser?.message}
+                error={!!errors.smtpUser}
               />
             </div>
 
@@ -266,7 +266,7 @@ export default function EmailSettingsPage() {
                   type={showPassword ? "text" : "password"}
                   {...register("smtpPassword")}
                   placeholder={t("emailSettings.passwordPlaceholder")}
-                  error={errors.smtpPassword?.message}
+                  error={!!errors.smtpPassword}
                 />
                 <button
                   type="button"
@@ -313,7 +313,7 @@ export default function EmailSettingsPage() {
                 type="email"
                 {...register("fromEmail")}
                 placeholder={t("emailSettings.fromEmailPlaceholder")}
-                error={errors.fromEmail?.message}
+                error={!!errors.fromEmail}
               />
             </div>
 
@@ -325,7 +325,7 @@ export default function EmailSettingsPage() {
                 id="fromName"
                 {...register("fromName")}
                 placeholder={t("emailSettings.fromNamePlaceholder")}
-                error={errors.fromName?.message}
+                error={!!errors.fromName}
               />
             </div>
           </div>

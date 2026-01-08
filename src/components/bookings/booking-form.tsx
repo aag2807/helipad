@@ -28,7 +28,7 @@ const bookingFormSchema = z.object({
   purpose: z.string().min(1, "Purpose is required").max(500),
   notes: z.string().max(1000).optional(),
   contactPhone: z.string().max(20).optional(),
-  passengers: z.coerce.number().int().min(1, "At least 1 passenger").max(50, "Maximum 50 passengers").default(1),
+  passengers: z.number().int().min(1, "At least 1 passenger").max(50, "Maximum 50 passengers"),
 });
 
 type BookingFormData = z.infer<typeof bookingFormSchema>;
@@ -286,7 +286,7 @@ export function BookingForm({
                 type="number"
                 min="1"
                 max="50"
-                {...register("passengers")}
+                {...register("passengers", { valueAsNumber: true })}
                 error={!!errors.passengers}
                 placeholder={t("bookings.passengersPlaceholder")}
               />
