@@ -44,13 +44,13 @@ export function DayView({
   const dateLocale = locale === "es" ? es : enUS;
 
   const timeSlots = useMemo(
-    () => generateTimeSlots(startHour, endHour, 30),
+    () => generateTimeSlots(startHour, endHour, 15), // Changed to 15-minute slots
     [startHour, endHour]
   );
 
   const getBookingsForSlot = (hour: number, minute: number) => {
     const slotStart = getSlotDateTime(date, hour, minute);
-    const slotEnd = getSlotDateTime(date, hour, minute + 30);
+    const slotEnd = getSlotDateTime(date, hour, minute + 15); // 15-minute slots
 
     return bookings.filter((booking) => {
       const bookingStart = new Date(booking.startTime);

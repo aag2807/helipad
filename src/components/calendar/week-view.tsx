@@ -44,13 +44,13 @@ export function WeekView({
   const dateLocale = locale === "es" ? es : enUS;
 
   const timeSlots = useMemo(
-    () => generateTimeSlots(startHour, endHour, 60),
+    () => generateTimeSlots(startHour, endHour, 15), // Changed to 15-minute slots
     [startHour, endHour]
   );
 
-  const getBookingsForSlot = (date: Date, hour: number) => {
-    const slotStart = getSlotDateTime(date, hour, 0);
-    const slotEnd = getSlotDateTime(date, hour + 1, 0);
+  const getBookingsForSlot = (date: Date, hour: number, minute: number) => {
+    const slotStart = getSlotDateTime(date, hour, minute);
+    const slotEnd = getSlotDateTime(date, hour, minute + 15); // 15-minute slots
 
     return bookings.filter((booking) => {
       const bookingStart = new Date(booking.startTime);
@@ -106,14 +106,14 @@ export function WeekView({
           >
             {/* Time label */}
             <div className="p-2 text-xs text-zinc-400 text-right pr-3 bg-zinc-50/50">
-              {slot.label}
+              {slot.minute === 0 ? slot.label : ""}
             </div>
 
             {/* Day cells */}
             {days.map((day) => {
               const slotDateTime = getSlotDateTime(day, slot.hour, slot.minute);
               const isPast = isBefore(slotDateTime, now);
-              const slotBookings = getBookingsForSlot(day, slot.hour);
+              const slotBookings = getBookingsForSlot(day, slot.hour, slot.minute);
               const hasBooking = slotBookings.length > 0;
               const isMyBooking = slotBookings.some(
                 (b) => b.userId === currentUserId
@@ -121,9 +121,9 @@ export function WeekView({
 
               return (
                 <div
-                  key={`${day.toISOString()}-${slot.hour}`}
+                  key={`${day.toISOString()}-${slot.hour}-${slot.minute}`}
                   className={cn(
-                    "relative min-h-[48px] border-l border-zinc-100 transition-colors",
+                    "relative min-h-[32px] border-l border-zinc-100 transition-colors",
                     isPast
                       ? "bg-zinc-50/50"
                       : hasBooking
@@ -140,17 +140,15 @@ export function WeekView({
                     const bookingStart = new Date(booking.startTime);
                     const isStartSlot =
                       bookingStart.getHours() === slot.hour &&
+                      bookingStart.getMinutes() === slot.minute &&
                       isSameDay(bookingStart, day);
 
                     if (!isStartSlot) return null;
 
                     const bookingEnd = new Date(booking.endTime);
-                    const durationHours =
-                      (bookingEnd.getTime() - bookingStart.getTime()) /
-                      (1000 * 60 * 60);
                     
                     const isOwnBooking = booking.userId === currentUserId;
-                    const canViewDetails = isOwnBooking; // Only owner can see details (admin will see details elsewhere)
+                    const canViewDetails = isOwnBooking;
 
                     return (
                       <button
@@ -162,28 +160,22 @@ export function WeekView({
                           }
                         }}
                         className={cn(
-                          "absolute inset-x-1 rounded-lg p-2 text-left text-xs font-medium transition-all z-10",
+                          "w-full rounded-lg p-1.5 text-left text-xs font-medium transition-all",
                           booking.status === "pending"
                             ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed"
                             : isOwnBooking
                             ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer"
                             : "bg-zinc-100 text-zinc-700 cursor-default"
                         )}
-                        style={{
-                          top: "2px",
-                          height: `calc(${durationHours * 100}% - 4px)`,
-                          minHeight: "40px",
-                        }}
                       >
-                        <div className="font-semibold truncate">
+                        <div className="font-semibold truncate text-[10px]">
                           {isOwnBooking 
                             ? `${booking.user?.firstName || "You"} ${booking.user?.lastName?.[0] || ""}.`
                             : t("calendar.booked")}
-                          {booking.status === "pending" && " (Pending)"}
+                          {booking.status === "pending" && " *"}
                         </div>
-                        <div className="text-[10px] opacity-75 truncate">
-                          {format(bookingStart, "h:mm a")} -{" "}
-                          {format(bookingEnd, "h:mm a")}
+                        <div className="text-[9px] opacity-75 truncate">
+                          {format(bookingStart, "h:mm")}
                         </div>
                       </button>
                     );
