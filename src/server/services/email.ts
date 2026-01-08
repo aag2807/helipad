@@ -5,9 +5,37 @@ import { emailLogs, emailConfigurations } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { GraphMailer } from "@/lib/email/graphMailer";
 import type { IMailer } from "@/lib/email/types";
+import enTranslations from "@/lib/translations/en.json";
+import esTranslations from "@/lib/translations/es.json";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Helipad Booking";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+// Translation helper
+const translations: Record<string, any> = {
+  en: enTranslations,
+  es: esTranslations,
+};
+
+function t(key: string, locale: string = "en", replacements?: Record<string, string>): string {
+  const keys = key.split(".");
+  let value: any = translations[locale] || translations.en;
+  
+  for (const k of keys) {
+    value = value?.[k];
+  }
+  
+  let result = value || key;
+  
+  // Replace {{variable}} placeholders
+  if (replacements) {
+    Object.entries(replacements).forEach(([k, v]) => {
+      result = result.replace(new RegExp(`{{${k}}}`, "g"), v);
+    });
+  }
+  
+  return result;
+}
 
 let cachedTransporter: Transporter | null = null;
 let cachedGraphMailer: GraphMailer | null = null;
@@ -234,32 +262,35 @@ interface BookingEmailData {
   startTime: string;
   endTime: string;
   purpose: string;
+  locale?: string; // Default to 'en' if not provided
 }
 
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<boolean> {
+  const locale = data.locale || "en";
+  
   const content = `
-    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">Booking Confirmed! ✅</h2>
+    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">${t("emails.bookingConfirmed", locale)} ✅</h2>
     <p style="margin: 0 0 24px; color: #52525b; font-size: 16px; line-height: 1.6;">
-      Hi ${data.userName}, your helipad booking has been confirmed.
+      ${t("emails.bookingConfirmedGreeting", locale, { userName: data.userName })}
     </p>
     
     <div style="background-color: #f4f4f5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #71717a; font-size: 14px;">📅 Date</span><br>
+            <span style="color: #71717a; font-size: 14px;">📅 ${t("emails.date", locale)}</span><br>
             <span style="color: #18181b; font-size: 16px; font-weight: 600;">${data.date}</span>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #71717a; font-size: 14px;">🕐 Time</span><br>
+            <span style="color: #71717a; font-size: 14px;">🕐 ${t("emails.time", locale)}</span><br>
             <span style="color: #18181b; font-size: 16px; font-weight: 600;">${data.startTime} - ${data.endTime}</span>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #71717a; font-size: 14px;">📝 Purpose</span><br>
+            <span style="color: #71717a; font-size: 14px;">📝 ${t("emails.purpose", locale)}</span><br>
             <span style="color: #18181b; font-size: 16px;">${data.purpose}</span>
           </td>
         </tr>
@@ -267,17 +298,17 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<b
     </div>
     
     <p style="margin: 0 0 24px; color: #52525b; font-size: 14px;">
-      Need to make changes? You can manage your booking from your dashboard.
+      ${t("emails.needChanges", locale)}
     </p>
     
     <a href="${APP_URL}/bookings/my-bookings" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-      View My Bookings
+      ${t("emails.viewMyBookings", locale)}
     </a>
   `;
 
   return sendEmail({
     to: data.userEmail,
-    subject: `✅ Booking Confirmed - ${data.date}`,
+    subject: `✅ ${t("emails.bookingConfirmed", locale)} - ${data.date}`,
     html: baseTemplate(content),
     userId: data.userId,
     bookingId: data.bookingId,
@@ -286,23 +317,25 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<b
 }
 
 export async function sendBookingCancellation(data: BookingEmailData): Promise<boolean> {
+  const locale = data.locale || "en";
+  
   const content = `
-    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">Booking Cancelled</h2>
+    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">${t("emails.bookingCancelled", locale)}</h2>
     <p style="margin: 0 0 24px; color: #52525b; font-size: 16px; line-height: 1.6;">
-      Hi ${data.userName}, your helipad booking has been cancelled.
+      ${t("emails.bookingCancelledMessage", locale, { userName: data.userName })}
     </p>
     
     <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #991b1b; font-size: 14px;">📅 Date</span><br>
+            <span style="color: #991b1b; font-size: 14px;">📅 ${t("emails.date", locale)}</span><br>
             <span style="color: #7f1d1d; font-size: 16px; font-weight: 600; text-decoration: line-through;">${data.date}</span>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #991b1b; font-size: 14px;">🕐 Time</span><br>
+            <span style="color: #991b1b; font-size: 14px;">🕐 ${t("emails.time", locale)}</span><br>
             <span style="color: #7f1d1d; font-size: 16px; font-weight: 600; text-decoration: line-through;">${data.startTime} - ${data.endTime}</span>
           </td>
         </tr>
@@ -310,17 +343,17 @@ export async function sendBookingCancellation(data: BookingEmailData): Promise<b
     </div>
     
     <p style="margin: 0 0 24px; color: #52525b; font-size: 14px;">
-      This time slot is now available for others to book. If you need to make a new booking, visit your dashboard.
+      ${t("emails.timeslotAvailable", locale)}
     </p>
     
     <a href="${APP_URL}/bookings/calendar" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-      Book New Slot
+      ${t("emails.bookNewSlot", locale)}
     </a>
   `;
 
   return sendEmail({
     to: data.userEmail,
-    subject: `Booking Cancelled - ${data.date}`,
+    subject: `${t("emails.bookingCancelled", locale)} - ${data.date}`,
     html: baseTemplate(content),
     userId: data.userId,
     bookingId: data.bookingId,
@@ -329,29 +362,31 @@ export async function sendBookingCancellation(data: BookingEmailData): Promise<b
 }
 
 export async function sendBookingReminder(data: BookingEmailData): Promise<boolean> {
+  const locale = data.locale || "en";
+  
   const content = `
-    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">Reminder: Upcoming Booking 🔔</h2>
+    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">${t("emails.upcomingBookingReminder", locale)} 🔔</h2>
     <p style="margin: 0 0 24px; color: #52525b; font-size: 16px; line-height: 1.6;">
-      Hi ${data.userName}, this is a reminder about your upcoming helipad booking.
+      ${t("emails.reminderMessage", locale, { userName: data.userName })}
     </p>
     
     <div style="background-color: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #92400e; font-size: 14px;">📅 Date</span><br>
+            <span style="color: #92400e; font-size: 14px;">📅 ${t("emails.date", locale)}</span><br>
             <span style="color: #78350f; font-size: 16px; font-weight: 600;">${data.date}</span>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #92400e; font-size: 14px;">🕐 Time</span><br>
+            <span style="color: #92400e; font-size: 14px;">🕐 ${t("emails.time", locale)}</span><br>
             <span style="color: #78350f; font-size: 16px; font-weight: 600;">${data.startTime} - ${data.endTime}</span>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 0;">
-            <span style="color: #92400e; font-size: 14px;">📝 Purpose</span><br>
+            <span style="color: #92400e; font-size: 14px;">📝 ${t("emails.purpose", locale)}</span><br>
             <span style="color: #78350f; font-size: 16px;">${data.purpose}</span>
           </td>
         </tr>
@@ -359,13 +394,13 @@ export async function sendBookingReminder(data: BookingEmailData): Promise<boole
     </div>
     
     <a href="${APP_URL}/bookings/my-bookings" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-      View Booking Details
+      ${t("emails.viewBookingDetails", locale)}
     </a>
   `;
 
   return sendEmail({
     to: data.userEmail,
-    subject: `🔔 Reminder: Booking Tomorrow - ${data.date}`,
+    subject: `🔔 ${t("emails.upcomingBookingReminder", locale)} - ${data.date}`,
     html: baseTemplate(content),
     userId: data.userId,
     bookingId: data.bookingId,

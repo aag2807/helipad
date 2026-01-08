@@ -261,17 +261,21 @@ export const bookingsRouter = createTRPCRouter({
         endTime: end,
       });
 
-      // Send confirmation email (async, don't block response)
-      sendBookingConfirmation({
-        userName: `${ctx.session.user.firstName} ${ctx.session.user.lastName}`,
-        userEmail: ctx.session.user.email ?? "",
-        userId: ctx.session.user.id,
-        bookingId: newBooking.id,
-        date: format(start, "EEEE, MMMM d, yyyy"),
-        startTime: format(start, "h:mm a"),
-        endTime: format(end, "h:mm a"),
-        purpose: input.purpose,
-      }).catch((err) => console.error("Failed to send confirmation email:", err));
+      // Send confirmation email ONLY if the booking is confirmed (not pending)
+      // If it's pending, the email will be sent when admin approves it
+      if (bookingStatus === "confirmed") {
+        sendBookingConfirmation({
+          userName: `${ctx.session.user.firstName} ${ctx.session.user.lastName}`,
+          userEmail: ctx.session.user.email ?? "",
+          userId: ctx.session.user.id,
+          bookingId: newBooking.id,
+          date: format(start, "EEEE, MMMM d, yyyy"),
+          startTime: format(start, "h:mm a"),
+          endTime: format(end, "h:mm a"),
+          purpose: input.purpose,
+          locale: "es", // Default to Spanish, can be made dynamic later
+        }).catch((err) => console.error("Failed to send confirmation email:", err));
+      }
 
       return newBooking;
     }),
@@ -306,8 +310,24 @@ export const bookingsRouter = createTRPCRouter({
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
 
-      // Check if booking is in the past
-      if (existing.startTime < new Date()) {
+      // Non-admin users cannot modify confirmed bookings (only pending ones)
+      if (ctx.session.user.role !== "admin" && existing.status === "confirmed") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify confirmed bookings. Only pending bookings can be edited.",
+        });
+      }
+
+      // Non-admin users cannot modify cancelled bookings
+      if (ctx.session.user.role !== "admin" && existing.status === "cancelled") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot modify cancelled bookings.",
+        });
+      }
+
+      // Check if booking is in the past (admins can still modify for corrections)
+      if (ctx.session.user.role !== "admin" && existing.startTime < new Date()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot modify past bookings",
@@ -431,6 +451,7 @@ export const bookingsRouter = createTRPCRouter({
           startTime: format(existing.startTime, "h:mm a"),
           endTime: format(existing.endTime, "h:mm a"),
           purpose: existing.purpose,
+          locale: "es", // Default to Spanish, can be made dynamic later
         }).catch((err) => console.error("Failed to send cancellation email:", err));
       }
 
@@ -486,6 +507,7 @@ export const bookingsRouter = createTRPCRouter({
           purpose: bookings.purpose,
           notes: bookings.notes,
           contactPhone: bookings.contactPhone,
+          passengers: bookings.passengers,
           status: bookings.status,
           createdAt: bookings.createdAt,
           cancelledAt: bookings.cancelledAt,
@@ -599,6 +621,7 @@ export const bookingsRouter = createTRPCRouter({
           startTime: format(existing.startTime, "h:mm a"),
           endTime: format(existing.endTime, "h:mm a"),
           purpose: existing.purpose,
+          locale: "es", // Default to Spanish, can be made dynamic later
         }).catch((err) => console.error("Failed to send confirmation email:", err));
       }
 
@@ -668,6 +691,7 @@ export const bookingsRouter = createTRPCRouter({
           startTime: format(existing.startTime, "h:mm a"),
           endTime: format(existing.endTime, "h:mm a"),
           purpose: existing.purpose,
+          locale: "es", // Default to Spanish, can be made dynamic later
         }).catch((err) => console.error("Failed to send rejection email:", err));
       }
 

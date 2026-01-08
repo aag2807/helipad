@@ -306,6 +306,7 @@
       "date": "Fecha",
       "time": "Hora",
       "purpose": "Propósito",
+      "passengers": "Pasajeros",
       "status": "Estado",
       "actions": "Acciones"
     },
@@ -317,7 +318,22 @@
     "bookingRejected": "Reserva rechazada",
     "bookingRejectedDescription": "La reserva ha sido rechazada y cancelada.",
     "exportComplete": "Exportación completa",
-    "exportedBookings": "Se exportaron {count} reservas a CSV."
+    "exportedBookings": "Se exportaron {count} reservas a CSV.",
+    "bookingDetails": "Detalles de la Reserva",
+    "userInformation": "Información del Usuario",
+    "name": "Nombre",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono",
+    "bookingInformation": "Información de la Reserva",
+    "dateTime": "Fecha y Hora",
+    "passengers": "Pasajeros",
+    "passenger": "pasajero",
+    "passengersPlural": "pasajeros",
+    "purpose": "Propósito",
+    "notes": "Notas",
+    "metadata": "Metadatos",
+    "bookingId": "ID de Reserva",
+    "createdAt": "Creada"
   },
 
   "adminSettings": {
@@ -450,7 +466,9 @@
     "bookingNotFound": "Reserva no encontrada",
     "accessDenied": "Acceso denegado",
     "cannotModifyPastBookings": "No se pueden modificar reservas pasadas",
-    "bookingAlreadyCancelled": "La reserva ya está cancelada"
+    "bookingAlreadyCancelled": "La reserva ya está cancelada",
+    "cannotModifyConfirmedBookings": "No se pueden modificar reservas confirmadas. Solo las reservas pendientes pueden ser editadas.",
+    "cannotModifyCancelledBookings": "No se pueden modificar reservas canceladas."
   },
 
   "emailSettings": {
@@ -517,6 +535,23 @@
     "fromEmailRequired": "El email de remitente es requerido",
     "fromEmailInvalid": "Dirección de email inválida",
     "fromNameRequired": "El nombre de remitente es requerido"
+  },
+
+  "emails": {
+    "bookingConfirmed": "¡Reserva Confirmada!",
+    "bookingConfirmedGreeting": "Hola {{userName}}, tu reserva de helipuerto ha sido confirmada.",
+    "date": "Fecha",
+    "time": "Hora",
+    "purpose": "Propósito",
+    "needChanges": "¿Necesitas hacer cambios? Puedes gestionar tu reserva desde tu panel.",
+    "viewMyBookings": "Ver Mis Reservas",
+    "bookingCancelled": "Reserva Cancelada",
+    "bookingCancelledMessage": "Hola {{userName}}, tu reserva de helipuerto ha sido cancelada.",
+    "timeslotAvailable": "Este horario ahora está disponible para que otros reserven. Si necesitas hacer una nueva reserva, visita tu panel.",
+    "bookNewSlot": "Reservar Nuevo Horario",
+    "upcomingBookingReminder": "Recordatorio: Próxima Reserva",
+    "reminderMessage": "Hola {{userName}}, este es un recordatorio sobre tu próxima reserva de helipuerto.",
+    "viewBookingDetails": "Ver Detalles de Reserva"
   }
 }
 

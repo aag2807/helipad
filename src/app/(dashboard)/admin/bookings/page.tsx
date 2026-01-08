@@ -11,7 +11,8 @@ import {
   Filter,
   Eye,
   X,
-  Check
+  Check,
+  Users
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useTranslations } from "@/hooks/use-translations";
@@ -39,6 +40,7 @@ export default function AdminBookingsPage() {
   const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [selectedBookingDetails, setSelectedBookingDetails] = useState<any | null>(null);
 
   const { data, isLoading, refetch } = trpc.bookings.listAll.useQuery({
     startDate: startDate ? new Date(startDate).toISOString() : undefined,
@@ -265,14 +267,15 @@ export default function AdminBookingsPage() {
                 <TableHead>{t("adminBookings.tableHeaders.date")}</TableHead>
                 <TableHead>{t("adminBookings.tableHeaders.time")}</TableHead>
                 <TableHead>{t("adminBookings.tableHeaders.purpose")}</TableHead>
+                <TableHead className="text-center">{t("adminBookings.tableHeaders.passengers")}</TableHead>
                 <TableHead>{t("adminBookings.tableHeaders.status")}</TableHead>
-                <TableHead className="w-24">{t("adminBookings.tableHeaders.actions")}</TableHead>
+                <TableHead className="w-32">{t("adminBookings.tableHeaders.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
+                  <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
                     {t("adminBookings.noBookingsFound")}
                   </TableCell>
                 </TableRow>
@@ -306,6 +309,14 @@ export default function AdminBookingsPage() {
                         {booking.purpose}
                       </p>
                     </TableCell>
+                    <TableCell className="text-center">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-zinc-100 rounded-md">
+                        <Users className="w-3.5 h-3.5 text-zinc-600" />
+                        <span className="text-sm font-medium text-zinc-900">
+                          {booking.passengers || 1}
+                        </span>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -325,6 +336,14 @@ export default function AdminBookingsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-violet-600 hover:text-violet-700 hover:bg-violet-50"
+                          onClick={() => setSelectedBookingDetails(booking)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
                         {booking.status === "pending" && (
                           <>
                             <Button
@@ -335,7 +354,6 @@ export default function AdminBookingsPage() {
                               disabled={approveBooking.isPending || rejectBooking.isPending}
                             >
                               <Check className="w-4 h-4" />
-                              {t("common.approve")}
                             </Button>
                             <Button
                               variant="ghost"
@@ -345,7 +363,6 @@ export default function AdminBookingsPage() {
                               disabled={approveBooking.isPending || rejectBooking.isPending}
                             >
                               <X className="w-4 h-4" />
-                              {t("common.reject")}
                             </Button>
                           </>
                         )}
@@ -358,7 +375,6 @@ export default function AdminBookingsPage() {
                             disabled={cancelBooking.isPending}
                           >
                             <X className="w-4 h-4" />
-                            {t("common.cancel")}
                           </Button>
                         )}
                       </div>
@@ -379,6 +395,201 @@ export default function AdminBookingsPage() {
             totalPages={pagination.totalPages}
             onPageChange={setPage}
           />
+        </div>
+      )}
+
+      {/* Booking Details Modal */}
+      {selectedBookingDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <h2 className="text-xl font-bold text-zinc-900">
+                {t("adminBookings.bookingDetails")}
+              </h2>
+              <button
+                onClick={() => setSelectedBookingDetails(null)}
+                className="text-zinc-400 hover:text-zinc-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="px-6 py-4 space-y-6">
+              {/* Status Badge */}
+              <div>
+                <Badge
+                  variant={
+                    selectedBookingDetails.status === "confirmed" 
+                      ? "success" 
+                      : selectedBookingDetails.status === "pending"
+                      ? "warning"
+                      : "destructive"
+                  }
+                  className="text-sm"
+                >
+                  {selectedBookingDetails.status === "confirmed" 
+                    ? t("bookingStatus.confirmed") 
+                    : selectedBookingDetails.status === "pending"
+                    ? t("bookingStatus.pending")
+                    : t("bookingStatus.cancelled")}
+                </Badge>
+              </div>
+
+              {/* User Information */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-zinc-700 uppercase tracking-wide">
+                  {t("adminBookings.userInformation")}
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-zinc-500">{t("adminBookings.name")}</p>
+                    <p className="text-sm font-medium text-zinc-900">
+                      {selectedBookingDetails.user
+                        ? `${selectedBookingDetails.user.firstName} ${selectedBookingDetails.user.lastName}`
+                        : t("adminBookings.unknown")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500">{t("adminBookings.email")}</p>
+                    <p className="text-sm font-medium text-zinc-900">
+                      {selectedBookingDetails.user?.email || "-"}
+                    </p>
+                  </div>
+                  {selectedBookingDetails.contactPhone && (
+                    <div>
+                      <p className="text-xs text-zinc-500">{t("adminBookings.phone")}</p>
+                      <p className="text-sm font-medium text-zinc-900">
+                        {selectedBookingDetails.contactPhone}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Booking Details */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-zinc-700 uppercase tracking-wide">
+                  {t("adminBookings.bookingInformation")}
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 bg-violet-50 rounded-lg">
+                    <Calendar className="w-5 h-5 text-violet-600 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs text-violet-600 font-medium">
+                        {t("adminBookings.dateTime")}
+                      </p>
+                      <p className="text-sm font-semibold text-violet-900">
+                        {format(new Date(selectedBookingDetails.startTime!), "EEEE, MMMM d, yyyy", { locale: dateLocale })}
+                      </p>
+                      <p className="text-sm text-violet-700">
+                        {format(new Date(selectedBookingDetails.startTime!), "h:mm a")} - {format(new Date(selectedBookingDetails.endTime!), "h:mm a")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <Users className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs text-blue-600 font-medium">
+                        {t("adminBookings.passengers")}
+                      </p>
+                      <p className="text-sm font-semibold text-blue-900">
+                        {selectedBookingDetails.passengers || 1} {(selectedBookingDetails.passengers || 1) === 1 ? t("adminBookings.passenger") : t("adminBookings.passengersPlural")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">{t("adminBookings.purpose")}</p>
+                    <p className="text-sm text-zinc-900">
+                      {selectedBookingDetails.purpose}
+                    </p>
+                  </div>
+
+                  {selectedBookingDetails.notes && (
+                    <div>
+                      <p className="text-xs text-zinc-500 mb-1">{t("adminBookings.notes")}</p>
+                      <p className="text-sm text-zinc-700 bg-zinc-50 p-3 rounded-lg">
+                        {selectedBookingDetails.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Metadata */}
+              <div className="space-y-3 pt-4 border-t border-zinc-200">
+                <h3 className="text-sm font-semibold text-zinc-700 uppercase tracking-wide">
+                  {t("adminBookings.metadata")}
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <p className="text-zinc-500">{t("adminBookings.bookingId")}</p>
+                    <p className="text-zinc-900 font-mono">{selectedBookingDetails.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500">{t("adminBookings.createdAt")}</p>
+                    <p className="text-zinc-900">
+                      {format(new Date(selectedBookingDetails.createdAt!), "MMM d, yyyy 'at' h:mm a", { locale: dateLocale })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-zinc-50 border-t border-zinc-200 px-6 py-4 flex items-center justify-end gap-2 rounded-b-2xl">
+              {selectedBookingDetails.status === "pending" && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      rejectBooking.mutate({ id: selectedBookingDetails.id });
+                      setSelectedBookingDetails(null);
+                    }}
+                    disabled={approveBooking.isPending || rejectBooking.isPending}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  >
+                    <X className="w-4 h-4" />
+                    {t("common.reject")}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      approveBooking.mutate({ id: selectedBookingDetails.id });
+                      setSelectedBookingDetails(null);
+                    }}
+                    disabled={approveBooking.isPending || rejectBooking.isPending}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Check className="w-4 h-4" />
+                    {t("common.approve")}
+                  </Button>
+                </>
+              )}
+              {selectedBookingDetails.status === "confirmed" && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    cancelBooking.mutate({ id: selectedBookingDetails.id });
+                    setSelectedBookingDetails(null);
+                  }}
+                  disabled={cancelBooking.isPending}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                >
+                  <X className="w-4 h-4" />
+                  {t("common.cancel")}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => setSelectedBookingDetails(null)}
+              >
+                {t("common.close")}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

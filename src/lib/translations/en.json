@@ -306,6 +306,7 @@
       "date": "Date",
       "time": "Time",
       "purpose": "Purpose",
+      "passengers": "Passengers",
       "status": "Status",
       "actions": "Actions"
     },
@@ -317,7 +318,21 @@
     "bookingRejected": "Booking rejected",
     "bookingRejectedDescription": "The booking has been rejected and cancelled.",
     "exportComplete": "Export complete",
-    "exportedBookings": "Exported {count} bookings to CSV."
+    "exportedBookings": "Exported {count} bookings to CSV.",
+    "bookingDetails": "Booking Details",
+    "userInformation": "User Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "bookingInformation": "Booking Information",
+    "dateTime": "Date & Time",
+    "passenger": "passenger",
+    "passengersPlural": "passengers",
+    "purpose": "Purpose",
+    "notes": "Notes",
+    "metadata": "Metadata",
+    "bookingId": "Booking ID",
+    "createdAt": "Created At"
   },
 
   "adminSettings": {
@@ -450,7 +465,9 @@
     "bookingNotFound": "Booking not found",
     "accessDenied": "Access denied",
     "cannotModifyPastBookings": "Cannot modify past bookings",
-    "bookingAlreadyCancelled": "Booking is already cancelled"
+    "bookingAlreadyCancelled": "Booking is already cancelled",
+    "cannotModifyConfirmedBookings": "Cannot modify confirmed bookings. Only pending bookings can be edited.",
+    "cannotModifyCancelledBookings": "Cannot modify cancelled bookings."
   },
 
   "emailSettings": {
@@ -517,6 +534,23 @@
     "fromEmailRequired": "From email is required",
     "fromEmailInvalid": "Invalid email address",
     "fromNameRequired": "From name is required"
+  },
+
+  "emails": {
+    "bookingConfirmed": "Booking Confirmed!",
+    "bookingConfirmedGreeting": "Hi {{userName}}, your helipad booking has been confirmed.",
+    "date": "Date",
+    "time": "Time",
+    "purpose": "Purpose",
+    "needChanges": "Need to make changes? You can manage your booking from your dashboard.",
+    "viewMyBookings": "View My Bookings",
+    "bookingCancelled": "Booking Cancelled",
+    "bookingCancelledMessage": "Hi {{userName}}, your helipad booking has been cancelled.",
+    "timeslotAvailable": "This time slot is now available for others to book. If you need to make a new booking, visit your dashboard.",
+    "bookNewSlot": "Book New Slot",
+    "upcomingBookingReminder": "Reminder: Upcoming Booking",
+    "reminderMessage": "Hi {{userName}}, this is a reminder about your upcoming helipad booking.",
+    "viewBookingDetails": "View Booking Details"
   }
 }
 
