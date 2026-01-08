@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
 import { useTranslations } from "@/hooks/use-translations";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import Image from "next/image";
 
 interface HeaderProps {
   user: {
@@ -74,11 +75,17 @@ export function Header({ user }: HeaderProps) {
           </button>
 
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 text-white flex items-center justify-center">
-              <Plane className="w-4 h-4" />
+          <div className="flex items-center gap-2 lg:hidden overflow-hidden">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/images/logo-long-no-bg.png"
+                alt="WTC logo"
+                width={185}
+                height={185}
+                priority
+                className="object-contain translate-y-[10px]"
+              />
             </div>
-            <span className="font-bold text-zinc-900">Helipad</span>
           </div>
 
           {/* Desktop spacer */}

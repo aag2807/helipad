@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
 import { useTranslations } from "@/hooks/use-translations";
+import Image from "next/image";
 
 interface SidebarProps {
   user: {
@@ -46,12 +47,16 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <div className="flex flex-col h-full bg-white border-r border-zinc-200">
       {/* Logo */}
-      <div className="flex items-center gap-3 h-16 px-6 border-b border-zinc-100">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 text-white">
-          <Plane className="w-5 h-5" />
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/images/logo-long-no-bg.png"
+            alt="WTC logo"
+            width={185}
+            height={185}
+            priority
+            className="object-contain"
+          />
         </div>
-        <span className="font-bold text-lg text-zinc-900">Helipad</span>
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto scrollbar-thin">

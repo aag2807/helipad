@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plane } from "lucide-react";
@@ -51,22 +52,33 @@ function LoginForm() {
 
   return (
     <div className="animate-fade-in">
-      {/* Language Switcher */}
-      <div className="absolute top-4 right-4">
-        <LanguageSwitcher />
-      </div>
+      {/* Language Switcher - Outside the card */}
+      
 
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-200 mb-4">
-          <Plane className="w-8 h-8" />
+      {/* Main Card - Contains everything */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10">
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
         </div>
-        <h1 className="text-2xl font-bold text-zinc-900">{t("auth.welcomeBack")}</h1>
-        <p className="text-zinc-500 mt-1">{t("auth.signInToManage")}</p>
-      </div>
+        {/* Header with Logo */}
+        <div className="text-center mb-8">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/images/logo-short-no-bg.png"
+              alt="Heliport Logo"
+              width={185}
+              height={185}
+              priority
+              className="object-contain"
+            />
+          </div>
+          
+          <h1 className="text-2xl font-bold text-zinc-900">{t("auth.welcomeBack")}</h1>
+          <p className="text-zinc-500 mt-1">{t("auth.signInToManage")}</p>
+        </div>
 
-      {/* Form Card */}
-      <div className="bg-white rounded-2xl shadow-xl shadow-zinc-200/50 border border-zinc-100 p-8">
+        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {error && (
             <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm border border-red-100">
@@ -139,15 +151,16 @@ function LoginForm() {
             )}
           </button>
         </form>
-      </div>
 
-      {/* Demo credentials hint */}
-      <div className="mt-6 text-center text-sm text-zinc-500">
-        <p>{t("auth.demoCredentials")}</p>
-        <p className="font-mono text-xs mt-1 text-zinc-600">
-          admin / admin123 &nbsp;•&nbsp; demo / demo1234
-        </p>
+        {/* Demo credentials hint - Inside the card */}
+        {/* <div className="mt-6 pt-6 border-t border-zinc-200 text-center text-sm text-zinc-500">
+          <p>{t("auth.demoCredentials")}</p>
+          <p className="font-mono text-xs mt-1 text-zinc-600">
+            admin / admin123 &nbsp;•&nbsp; demo / demo1234
+          </p>
+        </div> */}
       </div>
+      {/* End of Main Card */}
     </div>
   );
 }
