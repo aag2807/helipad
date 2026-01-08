@@ -43,7 +43,7 @@ export const settings = sqliteTable("settings", {
 // Email configurations table
 export const emailConfigurations = sqliteTable("email_configurations", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  provider: text("provider", { enum: ["smtp", "resend"] }).notNull().default("smtp"),
+  provider: text("provider", { enum: ["smtp", "resend", "msgraph"] }).notNull().default("smtp"),
   smtpHost: text("smtp_host"),
   smtpPort: integer("smtp_port"),
   smtpSecure: integer("smtp_secure", { mode: "boolean" }).default(true),
@@ -52,6 +52,10 @@ export const emailConfigurations = sqliteTable("email_configurations", {
   fromEmail: text("from_email").notNull(),
   fromName: text("from_name").notNull(),
   resendApiKey: text("resend_api_key"),
+  // Microsoft Graph fields (credentials stored in env vars)
+  azureTenantId: text("azure_tenant_id"),
+  azureClientId: text("azure_client_id"),
+  mailboxSender: text("mailbox_sender"),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),

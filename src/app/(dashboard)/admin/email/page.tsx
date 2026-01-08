@@ -23,23 +23,35 @@ import {
   EyeOff,
   AlertCircle,
   CheckCircle,
+  Cloud,
 } from "lucide-react";
 
 export default function EmailSettingsPage() {
   const { t } = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
   const [testEmail, setTestEmail] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<"smtp" | "resend" | "msgraph">("smtp");
 
   const emailConfigSchema = z.object({
-    provider: z.enum(["smtp", "resend"]),
-    smtpHost: z.string().min(1, t("emailSettings.smtpHostRequired")),
-    smtpPort: z.number().int().min(1).max(65535, t("emailSettings.smtpPortInvalid")),
-    smtpSecure: z.boolean(),
-    smtpUser: z.string().min(1, t("emailSettings.smtpUserRequired")),
-    smtpPassword: z.string().min(1, t("emailSettings.smtpPasswordRequired")),
+    provider: z.enum(["smtp", "resend", "msgraph"]),
+    smtpHost: z.string().optional(),
+    smtpPort: z.number().int().min(1).max(65535).optional(),
+    smtpSecure: z.boolean().optional(),
+    smtpUser: z.string().optional(),
+    smtpPassword: z.string().optional(),
     fromEmail: z.string().email(t("emailSettings.fromEmailInvalid")),
     fromName: z.string().min(1, t("emailSettings.fromNameRequired")),
-    testEmail: z.string().email(t("emailSettings.fromEmailInvalid")).optional(),
+    mailboxSender: z.string().email().optional(),
+    azureTenantId: z.string().optional(),
+    azureClientId: z.string().optional(),
+  }).refine((data) => {
+    // SMTP requires all SMTP fields
+    if (data.provider === "smtp") {
+      return data.smtpHost && data.smtpPort && data.smtpUser && data.smtpPassword;
+    }
+    return true;
+  }, {
+    message: t("emailSettings.smtpFieldsRequired"),
   });
 
   type EmailConfigFormData = z.infer<typeof emailConfigSchema>;
@@ -55,11 +67,12 @@ export default function EmailSettingsPage() {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
+    watch,
   } = useForm<EmailConfigFormData>({
     resolver: zodResolver(emailConfigSchema),
     values: config
       ? {
-          provider: config.provider as "smtp" | "resend",
+          provider: config.provider as "smtp" | "resend" | "msgraph",
           smtpHost: config.smtpHost || "",
           smtpPort: config.smtpPort || 587,
           smtpSecure: config.smtpSecure ?? false,
@@ -67,9 +80,15 @@ export default function EmailSettingsPage() {
           smtpPassword: config.smtpPassword || "",
           fromEmail: config.fromEmail || "",
           fromName: config.fromName || "",
+          mailboxSender: config.mailboxSender || "",
+          azureTenantId: config.azureTenantId || "",
+          azureClientId: config.azureClientId || "",
         }
       : undefined,
   });
+
+  // Watch provider changes
+  const currentProvider = watch("provider");
 
   const onSubmit = async (data: EmailConfigFormData) => {
     if (!config) return;
@@ -85,6 +104,9 @@ export default function EmailSettingsPage() {
         smtpPassword: data.smtpPassword,
         fromEmail: data.fromEmail,
         fromName: data.fromName,
+        mailboxSender: data.mailboxSender,
+        azureTenantId: data.azureTenantId,
+        azureClientId: data.azureClientId,
       });
 
       await utils.emailConfig.getCurrent.invalidate();
@@ -161,6 +183,12 @@ export default function EmailSettingsPage() {
     );
   }
 
+  // Check if Graph is configured via environment
+  const isGraphConfigured = !!(
+    process.env.NEXT_PUBLIC_AZURE_TENANT_ID ||
+    (typeof window === 'undefined' && process.env.AZURE_TENANT_ID)
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -185,7 +213,141 @@ export default function EmailSettingsPage() {
 
       {/* Configuration Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* SMTP Server Settings */}
+        {/* Provider Selection */}
+        <div className="rounded-lg border bg-card p-6">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold">Email Provider</h2>
+            <p className="text-sm text-muted-foreground">Choose your email delivery method</p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+              <input
+                type="radio"
+                value="smtp"
+                {...register("provider")}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Server className="h-4 w-4" />
+                  <span className="font-medium">SMTP Server</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Use your own SMTP server (Gmail, SendGrid, etc.)
+                </p>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+              <input
+                type="radio"
+                value="msgraph"
+                {...register("provider")}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Cloud className="h-4 w-4" />
+                  <span className="font-medium">Microsoft Graph (Office 365)</span>
+                  {isGraphConfigured && (
+                    <Badge variant="success" className="text-xs">Configured</Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Secure OAuth 2.0 authentication via Azure AD
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Microsoft Graph Configuration */}
+        {currentProvider === "msgraph" && (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Cloud className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Microsoft Graph Configuration</h2>
+            </div>
+
+            <div className="rounded-md bg-blue-50 dark:bg-blue-950 p-4 mb-4">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="text-sm text-blue-900 dark:text-blue-100">
+                  <p className="font-medium mb-2">Configuration via Environment Variables</p>
+                  <p className="mb-2">
+                    Microsoft Graph credentials are configured securely via environment variables:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li><code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">AZURE_TENANT_ID</code></li>
+                    <li><code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">AZURE_CLIENT_ID</code></li>
+                    <li><code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">AZURE_CLIENT_SECRET</code></li>
+                    <li><code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">MAILBOX_SENDER</code></li>
+                  </ul>
+                  <p className="mt-2">
+                    {isGraphConfigured ? (
+                      <span className="text-green-700 dark:text-green-300 font-medium">
+                        ✓ Environment variables detected
+                      </span>
+                    ) : (
+                      <span className="text-amber-700 dark:text-amber-300 font-medium">
+                        ⚠ Environment variables not detected
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="mailboxSender" className="text-sm font-medium">
+                  Mailbox Sender <span className="text-muted-foreground">(Display only)</span>
+                </label>
+                <Input
+                  id="mailboxSender"
+                  type="email"
+                  {...register("mailboxSender")}
+                  placeholder="helipuerto@grupovelutini.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Fixed sender address (enforced by backend for security)
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label htmlFor="azureTenantId" className="text-sm font-medium">
+                    Azure Tenant ID <span className="text-muted-foreground">(Display only)</span>
+                  </label>
+                  <Input
+                    id="azureTenantId"
+                    {...register("azureTenantId")}
+                    placeholder="Configured via environment"
+                    disabled
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="azureClientId" className="text-sm font-medium">
+                    Azure Client ID <span className="text-muted-foreground">(Display only)</span>
+                  </label>
+                  <Input
+                    id="azureClientId"
+                    {...register("azureClientId")}
+                    placeholder="Configured via environment"
+                    disabled
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SMTP Configuration */}
+        {currentProvider === "smtp" && (
+          <>
+            {/* SMTP Server Settings */}
         <div className="rounded-lg border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Server className="h-5 w-5 text-muted-foreground" />
@@ -295,6 +457,8 @@ export default function EmailSettingsPage() {
             </a>
           </div>
         </div>
+          </>
+        )}
 
         {/* Sender Information */}
         <div className="rounded-lg border bg-card p-6">
@@ -401,6 +565,7 @@ export default function EmailSettingsPage() {
       </div>
 
       {/* Help Section */}
+      {currentProvider === "smtp" && (
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-6 dark:border-blue-900 dark:bg-blue-950">
         <h3 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">
           {t("emailSettings.commonProviders")}
@@ -420,6 +585,7 @@ export default function EmailSettingsPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

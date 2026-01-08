@@ -3,11 +3,14 @@ import type { Transporter } from "nodemailer";
 import { db } from "@/server/db";
 import { emailLogs, emailConfigurations } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
+import { GraphMailer } from "@/lib/email/graphMailer";
+import type { IMailer } from "@/lib/email/types";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Helipad Booking";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 let cachedTransporter: Transporter | null = null;
+let cachedGraphMailer: GraphMailer | null = null;
 let cachedConfig: any | null = null;
 
 /**
@@ -24,47 +27,82 @@ async function getEmailConfig() {
 /**
  * Create nodemailer transporter from configuration
  */
-async function getTransporter(): Promise<Transporter | null> {
+async function getNodemailerTransporter(config: any): Promise<Transporter | null> {
+  try {
+    if (!config.smtpHost || !config.smtpPort || !config.smtpUser || !config.smtpPassword) {
+      console.log("[Email] SMTP configuration incomplete");
+      return null;
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: config.smtpHost,
+      port: config.smtpPort,
+      secure: config.smtpSecure ?? true,
+      auth: {
+        user: config.smtpUser,
+        pass: config.smtpPassword,
+      },
+    });
+
+    console.log(`[Email] SMTP transporter created for ${config.smtpHost}`);
+    return transporter;
+  } catch (error) {
+    console.error("[Email] Failed to create SMTP transporter:", error);
+    return null;
+  }
+}
+
+/**
+ * Get mailer instance based on provider
+ */
+async function getMailer(): Promise<{ mailer: IMailer | Transporter | null; config: any; provider: string }> {
   try {
     const config = await getEmailConfig();
 
     if (!config) {
       console.log("[Email] No active email configuration found");
-      return null;
+      return { mailer: null, config: null, provider: "none" };
     }
 
-    // Check if config changed, if not return cached transporter
-    if (cachedTransporter && cachedConfig?.id === config.id) {
-      return cachedTransporter;
+    // Check if config changed, if not return cached instance
+    if (cachedConfig?.id === config.id) {
+      if (config.provider === "msgraph" && cachedGraphMailer) {
+        return { mailer: cachedGraphMailer, config, provider: "msgraph" };
+      }
+      if (config.provider === "smtp" && cachedTransporter) {
+        return { mailer: cachedTransporter, config, provider: "smtp" };
+      }
     }
 
-    // SMTP configuration
-    if (config.provider === "smtp") {
-      if (!config.smtpHost || !config.smtpPort || !config.smtpUser || !config.smtpPassword) {
-        console.log("[Email] SMTP configuration incomplete");
-        return null;
+    // Microsoft Graph provider
+    if (config.provider === "msgraph") {
+      const sender = config.mailboxSender || process.env.MAILBOX_SENDER;
+      if (!sender) {
+        console.error("[Email] Microsoft Graph provider requires MAILBOX_SENDER");
+        return { mailer: null, config, provider: "msgraph" };
       }
 
-      cachedTransporter = nodemailer.createTransport({
-        host: config.smtpHost,
-        port: config.smtpPort,
-        secure: config.smtpSecure ?? true, // true for 465, false for other ports
-        auth: {
-          user: config.smtpUser,
-          pass: config.smtpPassword,
-        },
-      });
-
+      cachedGraphMailer = new GraphMailer(sender);
       cachedConfig = config;
-      console.log(`[Email] SMTP transporter created for ${config.smtpHost}`);
-      return cachedTransporter;
+      console.log(`[Email] Microsoft Graph mailer created for ${sender}`);
+      return { mailer: cachedGraphMailer, config, provider: "msgraph" };
+    }
+
+    // SMTP provider
+    if (config.provider === "smtp") {
+      const transporter = await getNodemailerTransporter(config);
+      if (transporter) {
+        cachedTransporter = transporter;
+        cachedConfig = config;
+        return { mailer: transporter, config, provider: "smtp" };
+      }
     }
 
     console.log("[Email] Unsupported email provider:", config.provider);
-    return null;
+    return { mailer: null, config, provider: config.provider };
   } catch (error) {
-    console.error("[Email] Failed to create transporter:", error);
-    return null;
+    console.error("[Email] Failed to get mailer:", error);
+    return { mailer: null, config: null, provider: "error" };
   }
 }
 
@@ -96,10 +134,10 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   };
 
   try {
-    const transporter = await getTransporter();
+    const { mailer, config, provider } = await getMailer();
 
-    // If no transporter configured, log and skip
-    if (!transporter) {
+    // If no mailer configured, log and skip
+    if (!mailer) {
       console.log(`[Email] Email service not configured. Would send to ${to}:`);
       console.log(`  Subject: ${subject}`);
       console.log(`  Type: ${type}`);
@@ -107,22 +145,34 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
       return true;
     }
 
-    const config = await getEmailConfig();
-    if (!config) {
-      await logEmail("failed", "No email configuration found");
-      return false;
+    // Microsoft Graph mailer
+    if (provider === "msgraph" && mailer instanceof GraphMailer) {
+      await mailer.sendMail({
+        to: [to],
+        subject,
+        htmlBody: html,
+      });
+
+      console.log(`[Email] Sent ${type} email to ${to} via Microsoft Graph`);
+      await logEmail("sent");
+      return true;
     }
 
-    const info = await transporter.sendMail({
-      from: `"${config.fromName}" <${config.fromEmail}>`,
-      to,
-      subject,
-      html,
-    });
+    // SMTP via nodemailer
+    if (provider === "smtp" && "sendMail" in mailer && config) {
+      const info = await (mailer as Transporter).sendMail({
+        from: `"${config.fromName}" <${config.fromEmail}>`,
+        to: to,
+        subject: subject,
+        html: html,
+      });
 
-    console.log(`[Email] Sent ${type} email to ${to}. Message ID: ${info.messageId}`);
-    await logEmail("sent");
-    return true;
+      console.log(`[Email] Sent ${type} email to ${to} via SMTP. Message ID: ${info.messageId}`);
+      await logEmail("sent");
+      return true;
+    }
+
+    throw new Error(`Unsupported provider: ${provider}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("[Email] Exception:", errorMessage);

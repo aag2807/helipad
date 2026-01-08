@@ -30,7 +30,7 @@ export const emailConfigRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        provider: z.enum(["smtp", "resend"]),
+        provider: z.enum(["smtp", "resend", "msgraph"]),
         smtpHost: z.string().optional(),
         smtpPort: z.number().int().min(1).max(65535).optional(),
         smtpSecure: z.boolean().optional(),
@@ -39,6 +39,9 @@ export const emailConfigRouter = createTRPCRouter({
         fromEmail: z.string().email(),
         fromName: z.string().min(1),
         resendApiKey: z.string().optional(),
+        azureTenantId: z.string().optional(),
+        azureClientId: z.string().optional(),
+        mailboxSender: z.string().email().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -60,7 +63,7 @@ export const emailConfigRouter = createTRPCRouter({
   create: adminProcedure
     .input(
       z.object({
-        provider: z.enum(["smtp", "resend"]),
+        provider: z.enum(["smtp", "resend", "msgraph"]),
         smtpHost: z.string().optional(),
         smtpPort: z.number().int().min(1).max(65535).optional(),
         smtpSecure: z.boolean().optional(),
@@ -69,6 +72,9 @@ export const emailConfigRouter = createTRPCRouter({
         fromEmail: z.string().email(),
         fromName: z.string().min(1),
         resendApiKey: z.string().optional(),
+        azureTenantId: z.string().optional(),
+        azureClientId: z.string().optional(),
+        mailboxSender: z.string().email().optional(),
         isActive: z.boolean().default(false),
       })
     )
