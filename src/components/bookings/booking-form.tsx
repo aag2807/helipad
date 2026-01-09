@@ -332,7 +332,7 @@ export function BookingForm({
             </div>
           </DialogBody>
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap">
             <Button
               type="button"
               variant="outline"

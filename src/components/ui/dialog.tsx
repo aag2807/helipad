@@ -159,7 +159,7 @@ function DialogBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement
 function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("px-6 py-4 pb-safe bg-zinc-50 rounded-b-2xl flex justify-end gap-3", className)}
+      className={cn("px-6 py-4 pb-safe bg-zinc-50 rounded-b-2xl flex justify-end gap-3 flex-col md:flex-row", className)}
       {...props}
     />
   );
