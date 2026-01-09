@@ -71,73 +71,76 @@ export function WeekView({
 
   return (
     <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-      {/* Header with days */}
-      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-zinc-200">
-        <div className="p-2 bg-zinc-50" />
-        {days.map((day) => (
-          <div
-            key={day.toISOString()}
-            className={cn(
-              "p-3 text-center border-l border-zinc-200",
-              isToday(day) && "bg-violet-50"
-            )}
-          >
-            <div className="text-xs text-zinc-500 uppercase">
-              {format(day, "EEE", { locale: dateLocale })}
-            </div>
-            <div
-              className={cn(
-                "text-lg font-semibold mt-1",
-                isToday(day)
-                  ? "w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center mx-auto"
-                  : "text-zinc-900"
-              )}
-            >
-              {format(day, "d")}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Time grid */}
-      <div className="max-h-[600px] overflow-y-auto scrollbar-thin">
-        {timeSlots.map((slot) => (
-          <div
-            key={`${slot.hour}-${slot.minute}`}
-            className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-zinc-100 last:border-b-0"
-          >
-            {/* Time label */}
-            <div className="p-2 text-xs text-zinc-400 text-right pr-3 bg-zinc-50/50">
-              {slot.minute === 0 ? slot.label : ""}
-            </div>
-
-            {/* Day cells */}
-            {days.map((day) => {
-              const slotDateTime = getSlotDateTime(day, slot.hour, slot.minute);
-              const isPast = isBefore(slotDateTime, now);
-              const slotBookings = getBookingsForSlot(day, slot.hour, slot.minute);
-              const hasBooking = slotBookings.length > 0;
-              const isMyBooking = slotBookings.some(
-                (b) => b.userId === currentUserId
-              );
-
-              return (
+      {/* Horizontal scroll wrapper */}
+      <div className="overflow-x-auto scrollbar-thin">
+        <div className="min-w-[800px]">
+          {/* Header with days */}
+          <div className="grid grid-cols-[80px_repeat(7,minmax(100px,1fr))] border-b border-zinc-200">
+            <div className="p-2 bg-zinc-50" />
+            {days.map((day) => (
+              <div
+                key={day.toISOString()}
+                className={cn(
+                  "p-3 text-center border-l border-zinc-200",
+                  isToday(day) && "bg-violet-50"
+                )}
+              >
+                <div className="text-xs text-zinc-500 uppercase">
+                  {format(day, "EEE", { locale: dateLocale })}
+                </div>
                 <div
-                  key={`${day.toISOString()}-${slot.hour}-${slot.minute}`}
                   className={cn(
-                    "relative min-h-[32px] border-l border-zinc-100 transition-colors",
-                    isPast
-                      ? "bg-zinc-50/50"
-                      : hasBooking
-                      ? ""
-                      : "hover:bg-emerald-50 cursor-pointer"
+                    "text-lg font-semibold mt-1",
+                    isToday(day)
+                      ? "w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center mx-auto"
+                      : "text-zinc-900"
                   )}
-                  onClick={() => {
-                    if (!isPast && !hasBooking) {
-                      onSlotClick(day, slot.hour, slot.minute);
-                    }
-                  }}
                 >
+                  {format(day, "d")}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Time grid */}
+          <div className="max-h-[600px] overflow-y-auto scrollbar-thin">
+            {timeSlots.map((slot) => (
+              <div
+                key={`${slot.hour}-${slot.minute}`}
+                className="grid grid-cols-[80px_repeat(7,minmax(100px,1fr))] border-b border-zinc-100 last:border-b-0"
+              >
+                {/* Time label */}
+                <div className="p-2 text-xs text-zinc-400 text-right pr-3 bg-zinc-50/50">
+                  {slot.minute === 0 ? slot.label : ""}
+                </div>
+
+                {/* Day cells */}
+                {days.map((day) => {
+                  const slotDateTime = getSlotDateTime(day, slot.hour, slot.minute);
+                  const isPast = isBefore(slotDateTime, now);
+                  const slotBookings = getBookingsForSlot(day, slot.hour, slot.minute);
+                  const hasBooking = slotBookings.length > 0;
+                  const isMyBooking = slotBookings.some(
+                    (b) => b.userId === currentUserId
+                  );
+
+                  return (
+                    <div
+                      key={`${day.toISOString()}-${slot.hour}-${slot.minute}`}
+                      className={cn(
+                        "relative min-h-[40px] border-l border-zinc-100 transition-colors",
+                        isPast
+                          ? "bg-zinc-50/50"
+                          : hasBooking
+                          ? ""
+                          : "hover:bg-emerald-50 cursor-pointer"
+                      )}
+                      onClick={() => {
+                        if (!isPast && !hasBooking) {
+                          onSlotClick(day, slot.hour, slot.minute);
+                        }
+                      }}
+                    >
                   {slotBookings.map((booking) => {
                     const bookingStart = new Date(booking.startTime);
                     const isStartSlot =
@@ -162,7 +165,7 @@ export function WeekView({
                           }
                         }}
                         className={cn(
-                          "w-full rounded-lg p-1.5 text-left text-xs font-medium transition-all",
+                          "w-full rounded-lg p-2 text-left text-sm font-medium transition-all",
                           booking.status === "pending"
                             ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed hover:ring-2 hover:ring-offset-1 hover:ring-amber-400 cursor-pointer"
                             : isOwnBooking
@@ -172,14 +175,14 @@ export function WeekView({
                             : "bg-zinc-100 text-zinc-700 cursor-default"
                         )}
                       >
-                        <div className="font-semibold truncate text-[10px]">
+                        <div className="font-semibold truncate text-xs">
                           {isOwnBooking 
                             ? `${booking.user?.firstName || "You"} ${booking.user?.lastName?.[0] || ""}.`
                             : `${booking.user?.firstName || "User"} ${booking.user?.lastName?.[0] || ""}.`}
                           {booking.status === "pending" && " *"}
                         </div>
-                        <div className="text-[9px] opacity-75 truncate">
-                          {format(bookingStart, "h:mm")}
+                        <div className="text-[10px] opacity-75 truncate mt-0.5">
+                          {format(bookingStart, "h:mm a")}
                         </div>
                       </button>
                     );
@@ -190,6 +193,8 @@ export function WeekView({
           </div>
         ))}
       </div>
+      </div>
+      {/* End of horizontal scroll wrapper */}
     </div>
   );
 }
