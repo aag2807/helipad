@@ -95,19 +95,19 @@ function DialogContent({ children, className }: DialogContentProps) {
         onClick={() => setOpen(false)}
       />
       
-      {/* Content */}
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">
+      {/* Content - Fixed for mobile Safari */}
+      <div className="fixed inset-0 overflow-y-auto overscroll-contain">
+        <div className="flex min-h-full items-center justify-center p-4 py-safe">
           <div
             className={cn(
-              "relative w-full max-w-lg bg-white rounded-2xl shadow-xl animate-fade-in",
+              "relative w-full max-w-lg bg-white rounded-2xl shadow-xl animate-fade-in my-8",
               className
             )}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
-              className="absolute right-4 top-4 p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+              className="absolute right-4 top-4 p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors z-10"
               onClick={() => setOpen(false)}
             >
               <X className="w-5 h-5" />
@@ -159,7 +159,7 @@ function DialogBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement
 function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("px-6 py-4 bg-zinc-50 rounded-b-2xl flex justify-end gap-3", className)}
+      className={cn("px-6 py-4 pb-safe bg-zinc-50 rounded-b-2xl flex justify-end gap-3", className)}
       {...props}
     />
   );

@@ -174,13 +174,14 @@ export function BookingForm({
                 {t("bookings.date")}
               </Label>
               <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
                 <Input
                   id="date"
                   type="date"
                   {...register("date")}
                   error={!!errors.date}
-                  className="pl-10"
+                  className="pl-10 w-full"
+                  style={{ minWidth: 0 }}
                   min={format(new Date(), "yyyy-MM-dd")}
                 />
               </div>

@@ -34,6 +34,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   themeColor: "#6d28d9",
+  viewportFit: "cover", // Support for safe area insets on iOS
 };
 
 export default function RootLayout({

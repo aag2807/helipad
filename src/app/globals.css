@@ -164,6 +164,19 @@
     padding-top: env(safe-area-inset-top, 0);
   }
   
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .py-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
   /* Hide scrollbar but keep functionality */
   .no-scrollbar {
     -ms-overflow-style: none;
