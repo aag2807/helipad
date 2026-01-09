@@ -161,14 +161,12 @@ export function WeekView({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              e.preventDefault();
                               if (canViewDetails) {
                                 onBookingClick(booking);
                               }
                             }}
                             onTouchEnd={(e) => {
                               e.stopPropagation();
-                              e.preventDefault();
                               if (canViewDetails) {
                                 onBookingClick(booking);
                               }

@@ -133,14 +133,12 @@ export function MonthView({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        e.preventDefault();
                         if (canViewDetails) {
                           onBookingClick(booking);
                         }
                       }}
                       onTouchEnd={(e) => {
                         e.stopPropagation();
-                        e.preventDefault();
                         if (canViewDetails) {
                           onBookingClick(booking);
                         }
