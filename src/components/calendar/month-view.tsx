@@ -130,21 +130,31 @@ export function MonthView({
                   return (
                     <button
                       key={booking.id}
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         if (canViewDetails) {
                           onBookingClick(booking);
                         }
                       }}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (canViewDetails) {
+                          onBookingClick(booking);
+                        }
+                      }}
+                      disabled={!canViewDetails}
                       className={cn(
-                        "w-full text-left text-xs px-2 py-1 rounded truncate transition-all",
+                        "w-full text-left text-xs px-2 py-1 rounded truncate transition-all touch-manipulation active:scale-95",
                         booking.status === "pending"
-                          ? "bg-amber-100 text-amber-800 border border-amber-300 border-dashed hover:ring-1 hover:ring-amber-400 cursor-pointer"
+                          ? "bg-amber-100 text-amber-800 border border-amber-300 border-dashed hover:ring-1 hover:ring-amber-400 cursor-pointer active:ring-1 active:ring-amber-400"
                           : isOwnBooking
-                          ? "bg-violet-100 text-violet-800 hover:ring-1 hover:ring-violet-300 cursor-pointer"
+                          ? "bg-violet-100 text-violet-800 hover:ring-1 hover:ring-violet-300 cursor-pointer active:ring-1 active:ring-violet-300"
                           : isAdmin
-                          ? "bg-blue-100 text-blue-800 hover:ring-1 hover:ring-blue-300 cursor-pointer"
-                          : "bg-zinc-100 text-zinc-700 cursor-default"
+                          ? "bg-blue-100 text-blue-800 hover:ring-1 hover:ring-blue-300 cursor-pointer active:ring-1 active:ring-blue-300"
+                          : "bg-zinc-100 text-zinc-700 cursor-not-allowed opacity-60"
                       )}
                     >
                       {isOwnBooking 

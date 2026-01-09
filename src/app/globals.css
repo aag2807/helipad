@@ -165,7 +165,7 @@
   }
   
   .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
   }
   
   .pt-safe {
@@ -194,5 +194,12 @@
   
   .touch-pan-x {
     touch-action: pan-x;
+  }
+  
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
   }
 }
