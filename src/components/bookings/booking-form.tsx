@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format, addMinutes, setHours, setMinutes } from "date-fns";
+import { es, enUS } from "date-fns/locale";
 import { Loader2, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -78,7 +79,8 @@ export function BookingForm({
   initialMinute,
   editingBooking,
 }: BookingFormProps) {
-  const { t } = useTranslations();
+  const { t, locale } = useTranslations();
+  const dateLocale = locale === "es" ? es : enUS;
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate || new Date());
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   
@@ -193,19 +195,20 @@ export function BookingForm({
                     type="button"
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal pl-10 h-12",
+                      "w-full justify-start text-left font-normal h-12 pl-[40px]",
                       !selectedDate && "text-muted-foreground",
                       errors.date && "border-red-500"
                     )}
                   >
-                    <CalendarIcon className="absolute left-3 w-4 h-4 text-zinc-400" />
-                    {selectedDate ? format(selectedDate, "PPP") : <span>{t("bookings.selectDate")}</span>}
+                    <CalendarIcon className="absolute left-[38px] w-4 h-4 text-zinc-400" />
+                    {selectedDate ? format(selectedDate, "PPP", { locale: dateLocale }) : <span>{t("bookings.selectDate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
+                    locale={dateLocale}
                     onSelect={(date) => {
                       if (date) {
                         setSelectedDate(date);
