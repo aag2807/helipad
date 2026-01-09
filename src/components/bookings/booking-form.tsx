@@ -195,7 +195,7 @@ export function BookingForm({
                     type="button"
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal h-12 pl-[40px]",
+                      "w-full justify-start text-left font-normal h-12 !pl-[40px]",
                       !selectedDate && "text-muted-foreground",
                       errors.date && "border-red-500"
                     )}
