@@ -157,6 +157,7 @@
     "bookHelipad": "Book Helipad",
     "selectTimeSlot": "Select your preferred time slot and provide booking details.",
     "date": "Date",
+    "selectDate": "Pick a date",
     "startTime": "Start Time",
     "duration": "Duration",
     "purpose": "Purpose",

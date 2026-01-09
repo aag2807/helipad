@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format, addMinutes, setHours, setMinutes } from "date-fns";
 import { Loader2, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +79,9 @@ export function BookingForm({
   editingBooking,
 }: BookingFormProps) {
   const { t } = useTranslations();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate || new Date());
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  
   // Generate 15-minute time slots (10 min booking + 5 min buffer)
   const timeSlots = useMemo(() => generateTimeSlots(6, 22, 15), []);
   
@@ -83,6 +93,7 @@ export function BookingForm({
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingFormSchema),
@@ -94,6 +105,7 @@ export function BookingForm({
       if (editingBooking) {
         // Pre-fill form with existing booking data
         const startDate = new Date(editingBooking.startTime);
+        setSelectedDate(startDate);
 
         reset({
           date: format(startDate, "yyyy-MM-dd"),
@@ -108,6 +120,7 @@ export function BookingForm({
         const date = initialDate || new Date();
         const hour = initialHour ?? 9;
         const minute = initialMinute ?? 0;
+        setSelectedDate(date);
 
         reset({
           date: format(date, "yyyy-MM-dd"),
@@ -173,18 +186,37 @@ export function BookingForm({
               <Label htmlFor="date" required>
                 {t("bookings.date")}
               </Label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
-                <Input
-                  id="date"
-                  type="date"
-                  {...register("date")}
-                  error={!!errors.date}
-                  className="pl-10 w-full"
-                  style={{ minWidth: 0 }}
-                  min={format(new Date(), "yyyy-MM-dd")}
-                />
-              </div>
+              <input type="hidden" {...register("date")} />
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal pl-10 h-12",
+                      !selectedDate && "text-muted-foreground",
+                      errors.date && "border-red-500"
+                    )}
+                  >
+                    <CalendarIcon className="absolute left-3 w-4 h-4 text-zinc-400" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>{t("bookings.selectDate")}</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDate(date);
+                        setValue("date", format(date, "yyyy-MM-dd"), { shouldValidate: true });
+                        setDatePickerOpen(false);
+                      }
+                    }}
+                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                  />
+                </PopoverContent>
+              </Popover>
               {errors.date && (
                 <p className="text-xs text-red-600">{errors.date.message}</p>
               )}
