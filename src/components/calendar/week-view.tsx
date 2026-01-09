@@ -57,7 +57,7 @@ export function WeekView({
     return bookings.filter((booking) => {
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
-      
+
       return (
         (booking.status === "confirmed" || booking.status === "pending") &&
         (isWithinInterval(slotStart, { start: bookingStart, end: bookingEnd }) ||
@@ -141,58 +141,61 @@ export function WeekView({
                         }
                       }}
                     >
-                  {slotBookings.map((booking) => {
-                    const bookingStart = new Date(booking.startTime);
-                    const isStartSlot =
-                      bookingStart.getHours() === slot.hour &&
-                      bookingStart.getMinutes() === slot.minute &&
-                      isSameDay(bookingStart, day);
+                      {slotBookings.map((booking) => {
+                        const bookingStart = new Date(booking.startTime);
+                        const isStartSlot =
+                          bookingStart.getHours() === slot.hour &&
+                          bookingStart.getMinutes() === slot.minute &&
+                          isSameDay(bookingStart, day);
 
-                    if (!isStartSlot) return null;
+                        if (!isStartSlot) return null;
 
-                    const bookingEnd = new Date(booking.endTime);
-                    
-                    const isOwnBooking = booking.userId === currentUserId;
-                    const canViewDetails = isOwnBooking || isAdmin;
+                        const bookingEnd = new Date(booking.endTime);
 
-                    return (
-                      <button
-                        key={booking.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (canViewDetails) {
-                            onBookingClick(booking);
-                          }
-                        }}
-                        className={cn(
-                          "w-full rounded-lg p-2 text-left text-sm font-medium transition-all",
-                          booking.status === "pending"
-                            ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed hover:ring-2 hover:ring-offset-1 hover:ring-amber-400 cursor-pointer"
-                            : isOwnBooking
-                            ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer"
-                            : isAdmin
-                            ? "bg-blue-100 text-blue-800 hover:ring-2 hover:ring-offset-1 hover:ring-blue-300 cursor-pointer"
-                            : "bg-zinc-100 text-zinc-700 cursor-default"
-                        )}
-                      >
-                        <div className="font-semibold truncate text-xs">
-                          {isOwnBooking 
-                            ? `${booking.user?.firstName || "You"} ${booking.user?.lastName?.[0] || ""}.`
-                            : `${booking.user?.firstName || "User"} ${booking.user?.lastName?.[0] || ""}.`}
-                          {booking.status === "pending" && " *"}
-                        </div>
-                        <div className="text-[10px] opacity-75 truncate mt-0.5">
-                          {format(bookingStart, "h:mm a")}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })}
+                        const isOwnBooking = booking.userId === currentUserId;
+                        const canViewDetails = isOwnBooking || isAdmin;
+
+                        return (
+                          <button
+                            key={booking.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (canViewDetails) {
+                                onBookingClick(booking);
+                              }
+                            }}
+                            className={cn(
+                              "w-full rounded-lg p-2 text-left text-sm font-medium transition-all",
+                              booking.status === "pending"
+                                ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed hover:ring-2 hover:ring-offset-1 hover:ring-amber-400 cursor-pointer"
+                                : isOwnBooking
+                                ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer"
+                                : isAdmin
+                                ? "bg-blue-100 text-blue-800 hover:ring-2 hover:ring-offset-1 hover:ring-blue-300 cursor-pointer"
+                                : "bg-zinc-100 text-zinc-700 cursor-default"
+                            )}
+                          >
+                            <div className="font-semibold truncate text-xs">
+                              {isOwnBooking 
+                                ? `${booking.user?.firstName || "You"} ${booking.user?.lastName?.[0] || ""}.`
+                                : `${booking.user?.firstName || "User"} ${booking.user?.lastName?.[0] || ""}.`}
+                              {booking.status === "pending" && " *"}
+                            </div>
+                            <div className="text-[10px] opacity-75 truncate mt-0.5">
+                              {format(bookingStart, "h:mm a")}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+          {/* End of time grid */}
+        </div>
+        {/* End of min-w wrapper */}
       </div>
       {/* End of horizontal scroll wrapper */}
     </div>
