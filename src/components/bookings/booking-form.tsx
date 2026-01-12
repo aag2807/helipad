@@ -37,6 +37,7 @@ const bookingFormSchema = z.object({
   notes: z.string().max(1000).optional(),
   contactPhone: z.string().max(20).optional(),
   passengers: z.number().int().min(1, "At least 1 passenger").max(50, "Maximum 50 passengers"),
+  helicopterRegistration: z.string().max(50).optional(),
 });
 
 type BookingFormData = z.infer<typeof bookingFormSchema>;
@@ -49,6 +50,7 @@ interface EditingBooking {
   notes?: string | null;
   contactPhone?: string | null;
   passengers?: number | null;
+  helicopterRegistration?: string | null;
 }
 
 interface BookingFormProps {
@@ -61,6 +63,7 @@ interface BookingFormProps {
     notes?: string;
     contactPhone?: string;
     passengers: number;
+    helicopterRegistration?: string;
   }) => void;
   isLoading?: boolean;
   initialDate?: Date;
@@ -116,6 +119,7 @@ export function BookingForm({
           notes: editingBooking.notes || "",
           contactPhone: editingBooking.contactPhone || "",
           passengers: editingBooking.passengers || 1,
+          helicopterRegistration: editingBooking.helicopterRegistration || "",
         });
       } else {
         // New booking - use initial values
@@ -131,6 +135,7 @@ export function BookingForm({
           notes: "",
           contactPhone: "",
           passengers: 1,
+          helicopterRegistration: "",
         });
       }
     }
@@ -166,6 +171,7 @@ export function BookingForm({
       notes: data.notes || undefined,
       contactPhone: data.contactPhone || undefined,
       passengers: data.passengers,
+      helicopterRegistration: data.helicopterRegistration || undefined,
     });
   };
 
@@ -329,6 +335,17 @@ export function BookingForm({
               {errors.passengers && (
                 <p className="text-xs text-red-600">{errors.passengers.message}</p>
               )}
+            </div>
+
+            {/* Helicopter Registration */}
+            <div className="space-y-2">
+              <Label htmlFor="helicopterRegistration">{t("bookings.helicopterRegistrationOptional")}</Label>
+              <Input
+                id="helicopterRegistration"
+                type="text"
+                {...register("helicopterRegistration")}
+                placeholder={t("bookings.helicopterRegistrationPlaceholder")}
+              />
             </div>
           </DialogBody>
 

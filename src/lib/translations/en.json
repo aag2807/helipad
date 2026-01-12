@@ -169,6 +169,8 @@
     "contactPhoneOptional": "Contact Phone (optional)",
     "passengers": "Passengers",
     "passengersPlaceholder": "Number of passengers",
+    "helicopterRegistrationOptional": "Helicopter Registration (optional)",
+    "helicopterRegistrationPlaceholder": "e.g., N123AB",
     "bookNow": "Book Now",
     "editBooking": "Edit Booking",
     "updateBooking": "Update Booking",
@@ -199,6 +201,7 @@
     "notes": "Notes",
     "contact": "Contact",
     "passengers": "Passengers",
+    "helicopterRegistration": "Helicopter Registration",
     "cancelBooking": "Cancel Booking",
     "bookingPassed": "This booking has already passed"
   },

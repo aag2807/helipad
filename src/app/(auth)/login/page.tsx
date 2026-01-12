@@ -63,7 +63,7 @@ function LoginForm() {
         {/* Header with Logo */}
         <div className="text-center mb-8">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 flex-col items-center">
             <Image
               src="/images/logo-short-no-bg.png"
               alt="Heliport Logo"
@@ -72,6 +72,8 @@ function LoginForm() {
               priority
               className="object-contain"
             />
+          <h3 className="text-lg text-zinc-900">Helipad</h3>
+
           </div>
           
           <h1 className="text-2xl font-bold text-zinc-900">{t("auth.welcomeBack")}</h1>

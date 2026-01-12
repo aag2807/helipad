@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Loader2, Calendar, Clock, User, Phone, FileText, X, Check, Users } from "lucide-react";
+import { Loader2, Calendar, Clock, User, Phone, FileText, X, Check, Users, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,6 +24,7 @@ interface Booking {
   notes?: string | null;
   contactPhone?: string | null;
   passengers?: number | null;
+  helicopterRegistration?: string | null;
   status: string;
   user: {
     id: string;
@@ -180,6 +181,19 @@ export function BookingDetails({
                 <p className="text-xs text-zinc-500 font-medium uppercase">{t("bookingDetails.passengers")}</p>
                 <p className="text-sm font-semibold text-zinc-900">
                   {booking.passengers}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Helicopter Registration */}
+          {booking.helicopterRegistration && (
+            <div className="flex items-start gap-3 p-3 bg-violet-50 rounded-xl">
+              <Plane className="w-5 h-5 text-violet-600 mt-0.5" />
+              <div>
+                <p className="text-xs text-violet-600 font-medium uppercase">{t("bookingDetails.helicopterRegistration")}</p>
+                <p className="text-sm font-semibold text-violet-900">
+                  {booking.helicopterRegistration}
                 </p>
               </div>
             </div>

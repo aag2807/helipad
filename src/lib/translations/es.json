@@ -169,6 +169,8 @@
     "contactPhoneOptional": "Teléfono de Contacto (opcional)",
     "passengers": "Pasajeros",
     "passengersPlaceholder": "Número de pasajeros",
+    "helicopterRegistrationOptional": "Matrícula de Helicóptero (opcional)",
+    "helicopterRegistrationPlaceholder": "ej., N123AB",
     "bookNow": "Reservar Ahora",
     "editBooking": "Editar Reserva",
     "updateBooking": "Actualizar Reserva",
@@ -199,6 +201,7 @@
     "notes": "Notas",
     "contact": "Contacto",
     "passengers": "Pasajeros",
+    "helicopterRegistration": "Matrícula de Helicóptero",
     "cancelBooking": "Cancelar Reserva",
     "bookingPassed": "Esta reserva ya ha pasado"
   },

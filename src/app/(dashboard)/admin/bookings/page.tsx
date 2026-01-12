@@ -12,7 +12,8 @@ import {
   Eye,
   X,
   Check,
-  Users
+  Users,
+  Plane
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useTranslations } from "@/hooks/use-translations";
@@ -115,6 +116,8 @@ export default function AdminBookingsPage() {
       "Start Time",
       "End Time",
       "Purpose",
+      "Passengers",
+      "Helicopter Registration",
       "Status",
       "Created At",
     ];
@@ -127,6 +130,8 @@ export default function AdminBookingsPage() {
       format(new Date(booking.startTime!), "HH:mm"),
       format(new Date(booking.endTime!), "HH:mm"),
       `"${booking.purpose?.replace(/"/g, '""') ?? ""}"`,
+      booking.passengers?.toString() ?? "1",
+      booking.helicopterRegistration ?? "",
       booking.status,
       format(new Date(booking.createdAt!), "yyyy-MM-dd HH:mm"),
     ]);
@@ -500,6 +505,20 @@ export default function AdminBookingsPage() {
                       </p>
                     </div>
                   </div>
+
+                  {selectedBookingDetails.helicopterRegistration && (
+                    <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
+                      <Plane className="w-5 h-5 text-emerald-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-xs text-emerald-600 font-medium">
+                          {t("bookingDetails.helicopterRegistration")}
+                        </p>
+                        <p className="text-sm font-semibold text-emerald-900">
+                          {selectedBookingDetails.helicopterRegistration}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <p className="text-xs text-zinc-500 mb-1">{t("adminBookings.purpose")}</p>
