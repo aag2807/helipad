@@ -25,6 +25,7 @@ interface Booking {
   purpose: string;
   notes?: string | null;
   contactPhone?: string | null;
+  helicopterRegistration?: string | null;
   status: string;
   user: {
     id: string;

@@ -31,6 +31,9 @@ export const bookingsRouter = createTRPCRouter({
           startTime: bookings.startTime,
           endTime: bookings.endTime,
           purpose: bookings.purpose,
+          notes: bookings.notes,
+          contactPhone: bookings.contactPhone,
+          helicopterRegistration: bookings.helicopterRegistration,
           status: bookings.status,
           user: {
             id: users.id,
@@ -71,6 +74,9 @@ export const bookingsRouter = createTRPCRouter({
           startTime: bookings.startTime,
           endTime: bookings.endTime,
           purpose: bookings.purpose,
+          notes: bookings.notes,
+          contactPhone: bookings.contactPhone,
+          helicopterRegistration: bookings.helicopterRegistration,
           status: bookings.status,
           user: {
             id: users.id,
