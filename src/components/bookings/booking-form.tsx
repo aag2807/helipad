@@ -37,7 +37,7 @@ const bookingFormSchema = z.object({
   notes: z.string().max(1000).optional(),
   contactPhone: z.string().max(20).optional(),
   passengers: z.number().int().min(1, "At least 1 passenger").max(50, "Maximum 50 passengers"),
-  helicopterRegistration: z.string().max(50).optional(),
+  helicopterRegistration: z.string().min(1, "Helicopter registration is required").max(50),
 });
 
 type BookingFormData = z.infer<typeof bookingFormSchema>;
@@ -63,7 +63,7 @@ interface BookingFormProps {
     notes?: string;
     contactPhone?: string;
     passengers: number;
-    helicopterRegistration?: string;
+    helicopterRegistration: string;
   }) => void;
   isLoading?: boolean;
   initialDate?: Date;
@@ -171,7 +171,7 @@ export function BookingForm({
       notes: data.notes || undefined,
       contactPhone: data.contactPhone || undefined,
       passengers: data.passengers,
-      helicopterRegistration: data.helicopterRegistration || undefined,
+      helicopterRegistration: data.helicopterRegistration,
     });
   };
 
@@ -339,13 +339,17 @@ export function BookingForm({
 
             {/* Helicopter Registration */}
             <div className="space-y-2">
-              <Label htmlFor="helicopterRegistration">{t("bookings.helicopterRegistrationOptional")}</Label>
+              <Label htmlFor="helicopterRegistration" required>{t("bookings.helicopterRegistration")}</Label>
               <Input
                 id="helicopterRegistration"
                 type="text"
                 {...register("helicopterRegistration")}
+                error={!!errors.helicopterRegistration}
                 placeholder={t("bookings.helicopterRegistrationPlaceholder")}
               />
+              {errors.helicopterRegistration && (
+                <p className="text-xs text-red-600">{errors.helicopterRegistration.message}</p>
+              )}
             </div>
           </DialogBody>
 

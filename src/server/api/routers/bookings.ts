@@ -180,7 +180,7 @@ export const bookingsRouter = createTRPCRouter({
         notes: z.string().max(1000).optional(),
         contactPhone: z.string().max(20).optional(),
         passengers: z.number().int().min(1).max(50).default(1),
-        helicopterRegistration: z.string().max(50).optional(),
+        helicopterRegistration: z.string().min(1, "Helicopter registration is required").max(50),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -294,7 +294,7 @@ export const bookingsRouter = createTRPCRouter({
         purpose: z.string().min(1).max(500).optional(),
         notes: z.string().max(1000).optional(),
         contactPhone: z.string().max(20).optional(),
-        helicopterRegistration: z.string().max(50).optional(),
+        helicopterRegistration: z.string().min(1).max(50).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

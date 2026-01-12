@@ -211,7 +211,7 @@ export default function CalendarPage() {
     purpose: string;
     notes?: string;
     contactPhone?: string;
-    helicopterRegistration?: string;
+    helicopterRegistration: string;
   }) => {
     if (editingBooking) {
       updateBooking.mutate({

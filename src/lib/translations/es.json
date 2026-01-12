@@ -169,7 +169,7 @@
     "contactPhoneOptional": "Teléfono de Contacto (opcional)",
     "passengers": "Pasajeros",
     "passengersPlaceholder": "Número de pasajeros",
-    "helicopterRegistrationOptional": "Matrícula de Helicóptero (opcional)",
+    "helicopterRegistration": "Matrícula de Helicóptero",
     "helicopterRegistrationPlaceholder": "ej., N123AB",
     "bookNow": "Reservar Ahora",
     "editBooking": "Editar Reserva",
