@@ -90,7 +90,7 @@ export const passengers = sqliteTable("passengers", {
   name: text("name").notNull(),
   identificationType: text("identification_type", { enum: ["cedula", "passport", "other"] }).notNull(),
   identificationNumber: text("identification_number").notNull(),
-  idPhotoBase64: text("id_photo_base64"), // Base64 encoded photo (optional, max 10MB)
+  idPhotoBase64: text("id_photo"), // Base64 encoded photo (optional, max 10MB) - column name is id_photo in DB
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
