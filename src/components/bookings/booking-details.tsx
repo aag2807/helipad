@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Loader2, Calendar, Clock, User, Phone, FileText, X, Check, Users, Plane } from "lucide-react";
+import { Loader2, Calendar, Clock, User, Phone, FileText, X, Check, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useTranslations } from "@/hooks/use-translations";
+import { PassengerList } from "@/components/bookings/passenger-list";
 
 interface Booking {
   id: string;
@@ -23,7 +24,6 @@ interface Booking {
   purpose: string;
   notes?: string | null;
   contactPhone?: string | null;
-  passengers?: number | null;
   helicopterRegistration?: string | null;
   status: string;
   user: {
@@ -173,19 +173,6 @@ export function BookingDetails({
             </div>
           )}
 
-          {/* Passengers */}
-          {booking.passengers && (
-            <div className="flex items-start gap-3 p-3 bg-zinc-50 rounded-xl">
-              <Users className="w-5 h-5 text-violet-600 mt-0.5" />
-              <div>
-                <p className="text-xs text-zinc-500 font-medium uppercase">{t("bookingDetails.passengers")}</p>
-                <p className="text-sm font-semibold text-zinc-900">
-                  {booking.passengers}
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Helicopter Registration */}
           {booking.helicopterRegistration && (
             <div className="flex items-start gap-3 p-3 bg-violet-50 rounded-xl">
@@ -198,6 +185,12 @@ export function BookingDetails({
               </div>
             </div>
           )}
+
+          {/* Passengers List */}
+          <PassengerList
+            bookingId={booking.id}
+            isOwnerOrAdmin={isOwner || isAdmin}
+          />
 
           {/* Past booking notice */}
           {isPast && booking.status === "confirmed" && (

@@ -180,6 +180,8 @@
     "fixedDurationBooking": "de reserva",
     "endsAt": "Termina:",
     "bufferInfo": "+ 5 minutos de margen para salida (próximo horario disponible 15 min después del inicio)",
+    "dateTime": "Fecha y Hora",
+    "flightDetails": "Detalles del Vuelo",
     "durations": {
       "15min": "15 minutos",
       "30min": "30 minutos",
@@ -190,6 +192,31 @@
       "3hours": "3 horas",
       "4hours": "4 horas"
     }
+  },
+
+  "passengers": {
+    "title": "Pasajeros",
+    "description": "Agregue todos los pasajeros para este vuelo",
+    "added": "agregados",
+    "addPassenger": "Agregar Pasajero",
+    "addNew": "Agregar Nuevo Pasajero",
+    "editPassenger": "Editar Pasajero",
+    "addToList": "Agregar a la Lista",
+    "atLeastOne": "Se requiere al menos un pasajero para esta reserva",
+    "name": "Nombre Completo",
+    "namePlaceholder": "Juan Pérez",
+    "identificationType": "Tipo de Identificación",
+    "cedula": "Cédula",
+    "passport": "Pasaporte",
+    "other": "Otro",
+    "identificationNumber": "Número de Identificación",
+    "identificationPlaceholder": "ej., 001-1234567-8",
+    "idPhoto": "Foto de Identificación (opcional)",
+    "uploadPhoto": "Haga clic para subir foto",
+    "photoFormat": "JPG, PNG (máx 10MB)",
+    "photoSizeError": "El tamaño de la foto excede el límite de 10MB",
+    "photoTypeError": "Por favor suba un archivo de imagen",
+    "noPassengers": "No se agregó información de pasajeros"
   },
 
   "bookingDetails": {

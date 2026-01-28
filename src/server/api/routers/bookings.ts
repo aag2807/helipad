@@ -1,11 +1,19 @@
 import { z } from "zod";
 import { format } from "date-fns";
 import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
-import { bookings, users } from "@/server/db/schema";
+import { bookings, users, passengers } from "@/server/db/schema";
 import { eq, and, gte, lte, lt, gt, desc, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { broadcastBookingCreated, broadcastBookingCancelled } from "@/server/services/sse";
 import { sendBookingConfirmation, sendBookingCancellation } from "@/server/services/email";
+
+const passengerInputSchema = z.object({
+  id: z.string().optional(), // For existing passengers
+  name: z.string().min(1).max(255),
+  identificationType: z.enum(["cedula", "passport", "other"]),
+  identificationNumber: z.string().min(1).max(255),
+  idPhotoBase64: z.string().optional(),
+});
 
 export const bookingsRouter = createTRPCRouter({
   /**
@@ -185,8 +193,8 @@ export const bookingsRouter = createTRPCRouter({
         purpose: z.string().min(1).max(500),
         notes: z.string().max(1000).optional(),
         contactPhone: z.string().max(20).optional(),
-        passengers: z.number().int().min(1).max(50).default(1),
         helicopterRegistration: z.string().min(1, "Helicopter registration is required").max(50),
+        passengers: z.array(passengerInputSchema).min(1, "At least one passenger is required"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -254,11 +262,23 @@ export const bookingsRouter = createTRPCRouter({
           purpose: input.purpose,
           notes: input.notes,
           contactPhone: input.contactPhone,
-          passengers: input.passengers,
           helicopterRegistration: input.helicopterRegistration,
           status: bookingStatus,
         })
         .returning();
+
+      // Insert passengers for this booking
+      if (input.passengers && input.passengers.length > 0) {
+        await ctx.db.insert(passengers).values(
+          input.passengers.map((passenger) => ({
+            bookingId: newBooking.id,
+            name: passenger.name,
+            identificationType: passenger.identificationType,
+            identificationNumber: passenger.identificationNumber,
+            idPhotoBase64: passenger.idPhotoBase64,
+          }))
+        );
+      }
 
       // Broadcast SSE event for real-time calendar updates
       // Admins will see pending bookings, regular users only see confirmed ones
@@ -301,10 +321,11 @@ export const bookingsRouter = createTRPCRouter({
         notes: z.string().max(1000).optional(),
         contactPhone: z.string().max(20).optional(),
         helicopterRegistration: z.string().min(1).max(50).optional(),
+        passengers: z.array(passengerInputSchema).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...updateData } = input;
+      const { id, passengers: passengerUpdates, ...updateData } = input;
 
       const existing = await ctx.db.query.bookings.findFirst({
         where: eq(bookings.id, id),
@@ -380,6 +401,52 @@ export const bookingsRouter = createTRPCRouter({
             code: "CONFLICT",
             message: "This time slot conflicts with an existing booking (including 5-minute buffer)",
           });
+        }
+      }
+
+      // Update passengers if provided
+      if (passengerUpdates) {
+        // Get existing passengers
+        const existingPassengers = await ctx.db.query.passengers.findMany({
+          where: eq(passengers.bookingId, id),
+        });
+
+        // Determine which passengers to delete, update, and create
+        const existingIds = existingPassengers.map((p) => p.id);
+        const updatedIds = passengerUpdates.filter((p) => p.id).map((p) => p.id!);
+        const idsToDelete = existingIds.filter((id) => !updatedIds.includes(id));
+
+        // Delete removed passengers
+        if (idsToDelete.length > 0) {
+          await ctx.db.delete(passengers).where(
+            sql`${passengers.id} IN (${sql.join(idsToDelete.map((id) => sql`${id}`), sql`, `)})`
+          );
+        }
+
+        // Update existing passengers and create new ones
+        for (const passenger of passengerUpdates) {
+          if (passenger.id) {
+            // Update existing passenger
+            await ctx.db
+              .update(passengers)
+              .set({
+                name: passenger.name,
+                identificationType: passenger.identificationType,
+                identificationNumber: passenger.identificationNumber,
+                idPhotoBase64: passenger.idPhotoBase64,
+                updatedAt: new Date(),
+              })
+              .where(eq(passengers.id, passenger.id));
+          } else {
+            // Create new passenger
+            await ctx.db.insert(passengers).values({
+              bookingId: id,
+              name: passenger.name,
+              identificationType: passenger.identificationType,
+              identificationNumber: passenger.identificationNumber,
+              idPhotoBase64: passenger.idPhotoBase64,
+            });
+          }
         }
       }
 

@@ -12,7 +12,6 @@ import {
   Eye,
   X,
   Check,
-  Users,
   Plane
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -32,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
+import { PassengerList } from "@/components/bookings/passenger-list";
 
 export default function AdminBookingsPage() {
   const { t, locale, translateError } = useTranslations();
@@ -116,7 +116,6 @@ export default function AdminBookingsPage() {
       "Start Time",
       "End Time",
       "Purpose",
-      "Passengers",
       "Helicopter Registration",
       "Status",
       "Created At",
@@ -130,7 +129,6 @@ export default function AdminBookingsPage() {
       format(new Date(booking.startTime!), "HH:mm"),
       format(new Date(booking.endTime!), "HH:mm"),
       `"${booking.purpose?.replace(/"/g, '""') ?? ""}"`,
-      booking.passengers?.toString() ?? "1",
       booking.helicopterRegistration ?? "",
       booking.status,
       format(new Date(booking.createdAt!), "yyyy-MM-dd HH:mm"),
@@ -272,7 +270,6 @@ export default function AdminBookingsPage() {
                 <TableHead>{t("adminBookings.tableHeaders.date")}</TableHead>
                 <TableHead>{t("adminBookings.tableHeaders.time")}</TableHead>
                 <TableHead>{t("adminBookings.tableHeaders.purpose")}</TableHead>
-                <TableHead className="text-center">{t("adminBookings.tableHeaders.passengers")}</TableHead>
                 <TableHead>{t("adminBookings.tableHeaders.status")}</TableHead>
                 <TableHead className="w-32">{t("adminBookings.tableHeaders.actions")}</TableHead>
               </TableRow>
@@ -280,7 +277,7 @@ export default function AdminBookingsPage() {
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
+                  <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
                     {t("adminBookings.noBookingsFound")}
                   </TableCell>
                 </TableRow>
@@ -313,14 +310,6 @@ export default function AdminBookingsPage() {
                       <p className="truncate max-w-[200px]" title={booking.purpose ?? ""}>
                         {booking.purpose}
                       </p>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-zinc-100 rounded-md">
-                        <Users className="w-3.5 h-3.5 text-zinc-600" />
-                        <span className="text-sm font-medium text-zinc-900">
-                          {booking.passengers || 1}
-                        </span>
-                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -494,18 +483,6 @@ export default function AdminBookingsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <Users className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-xs text-blue-600 font-medium">
-                        {t("adminBookings.passengers")}
-                      </p>
-                      <p className="text-sm font-semibold text-blue-900">
-                        {selectedBookingDetails.passengers || 1} {(selectedBookingDetails.passengers || 1) === 1 ? t("adminBookings.passenger") : t("adminBookings.passengersPlural")}
-                      </p>
-                    </div>
-                  </div>
-
                   {selectedBookingDetails.helicopterRegistration && (
                     <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
                       <Plane className="w-5 h-5 text-emerald-600 mt-0.5" />
@@ -535,6 +512,14 @@ export default function AdminBookingsPage() {
                       </p>
                     </div>
                   )}
+
+                  {/* Passengers List */}
+                  <div className="pt-2">
+                    <PassengerList
+                      bookingId={selectedBookingDetails.id}
+                      isOwnerOrAdmin={true}
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -148,6 +148,7 @@ export default function MyBookingsPage() {
     notes?: string;
     contactPhone?: string;
     helicopterRegistration: string;
+    passengers: any[]; // PassengerFormData[]
   }) => {
     if (editingBooking) {
       updateBooking.mutate({
@@ -158,6 +159,7 @@ export default function MyBookingsPage() {
         notes: data.notes,
         contactPhone: data.contactPhone,
         helicopterRegistration: data.helicopterRegistration,
+        passengers: data.passengers,
       });
     } else {
       createBooking.mutate(data);

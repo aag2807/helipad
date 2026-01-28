@@ -180,6 +180,8 @@
     "fixedDurationBooking": "booking",
     "endsAt": "Ends:",
     "bufferInfo": "+ 5 minute buffer for departure (next slot available 15 min after start)",
+    "dateTime": "Date & Time",
+    "flightDetails": "Flight Details",
     "durations": {
       "15min": "15 minutes",
       "30min": "30 minutes",
@@ -190,6 +192,31 @@
       "3hours": "3 hours",
       "4hours": "4 hours"
     }
+  },
+
+  "passengers": {
+    "title": "Passengers",
+    "description": "Add all passengers for this flight",
+    "added": "added",
+    "addPassenger": "Add Passenger",
+    "addNew": "Add New Passenger",
+    "editPassenger": "Edit Passenger",
+    "addToList": "Add to List",
+    "atLeastOne": "At least one passenger is required for this booking",
+    "name": "Full Name",
+    "namePlaceholder": "John Doe",
+    "identificationType": "Identification Type",
+    "cedula": "Cédula",
+    "passport": "Passport",
+    "other": "Other",
+    "identificationNumber": "Identification Number",
+    "identificationPlaceholder": "e.g., 001-1234567-8",
+    "idPhoto": "ID Photo (optional)",
+    "uploadPhoto": "Click to upload photo",
+    "photoFormat": "JPG, PNG (max 10MB)",
+    "photoSizeError": "Photo size exceeds 10MB limit",
+    "photoTypeError": "Please upload an image file",
+    "noPassengers": "No passenger information added"
   },
 
   "bookingDetails": {

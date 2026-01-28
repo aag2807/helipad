@@ -83,6 +83,18 @@ export const passwordResetTokens = sqliteTable("password_reset_tokens", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// Passengers table
+export const passengers = sqliteTable("passengers", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  bookingId: text("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  identificationType: text("identification_type", { enum: ["cedula", "passport", "other"] }).notNull(),
+  identificationNumber: text("identification_number").notNull(),
+  idPhotoBase64: text("id_photo_base64"), // Base64 encoded photo (optional, max 10MB)
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   bookings: many(bookings),
@@ -107,6 +119,7 @@ export const bookingsRelations = relations(bookings, ({ one, many }) => ({
     references: [users.id],
   }),
   emailLogs: many(emailLogs),
+  passengers: many(passengers),
 }));
 
 export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
@@ -116,6 +129,13 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   }),
   booking: one(bookings, {
     fields: [emailLogs.bookingId],
+    references: [bookings.id],
+  }),
+}));
+
+export const passengersRelations = relations(passengers, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [passengers.bookingId],
     references: [bookings.id],
   }),
 }));
@@ -130,4 +150,6 @@ export type EmailConfiguration = typeof emailConfigurations.$inferSelect;
 export type NewEmailConfiguration = typeof emailConfigurations.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type Passenger = typeof passengers.$inferSelect;
+export type NewPassenger = typeof passengers.$inferInsert;
 
