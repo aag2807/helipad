@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Calendar, History, Plus, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -26,6 +27,7 @@ interface Booking {
 }
 
 export default function MyBookingsPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [page, setPage] = useState(1);
@@ -34,6 +36,13 @@ export default function MyBookingsPage() {
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const { t, translateError } = useTranslations();
+
+  // Redirect security users to admin bookings page
+  useEffect(() => {
+    if (session?.user?.role === "security") {
+      router.push("/admin/bookings");
+    }
+  }, [session, router]);
 
   // Query bookings
   const { data, isLoading } = trpc.bookings.getMyBookings.useQuery({

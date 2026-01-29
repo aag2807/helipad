@@ -22,7 +22,7 @@ interface SidebarProps {
     id: string;
     firstName: string;
     lastName: string;
-    role: "admin" | "user";
+    role: "admin" | "security" | "user";
   };
 }
 
@@ -47,12 +47,12 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <div className="flex flex-col h-full bg-white border-r border-zinc-200">
       {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 px-4 pt-6">
           <Image
             src="/images/logo-long-no-bg.png"
             alt="WTC logo"
             width={185}
-            height={185}
+            height={100}
             priority
             className="object-contain"
           />
@@ -90,7 +90,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         {/* Admin nav */}
-        {user.role === "admin" && (
+        {(user.role === "admin" || user.role === "security") && (
           <div>
             <h3 className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
               {t("navigation.administration")}

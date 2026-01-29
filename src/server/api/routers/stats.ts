@@ -1,4 +1,4 @@
-import { createTRPCRouter, adminProcedure } from "../trpc";
+import { createTRPCRouter, securityOrAdminProcedure } from "../trpc";
 import { bookings, users } from "@/server/db/schema";
 import { eq, and, gte, lte, sql, count } from "drizzle-orm";
 import {
@@ -18,7 +18,7 @@ export const statsRouter = createTRPCRouter({
   /**
    * Get dashboard overview stats
    */
-  getOverview: adminProcedure.query(async ({ ctx }) => {
+  getOverview: securityOrAdminProcedure.query(async ({ ctx }) => {
     const now = new Date();
     const todayStart = startOfDay(now);
     const todayEnd = endOfDay(now);
@@ -119,7 +119,7 @@ export const statsRouter = createTRPCRouter({
   /**
    * Get booking trends for chart (last 30 days)
    */
-  getBookingTrends: adminProcedure.query(async ({ ctx }) => {
+  getBookingTrends: securityOrAdminProcedure.query(async ({ ctx }) => {
     const now = new Date();
     const thirtyDaysAgo = subDays(now, 30);
 
@@ -158,7 +158,7 @@ export const statsRouter = createTRPCRouter({
   /**
    * Get top users by bookings
    */
-  getTopUsers: adminProcedure.query(async ({ ctx }) => {
+  getTopUsers: securityOrAdminProcedure.query(async ({ ctx }) => {
     const monthStart = startOfMonth(new Date());
 
     const topUsers = await ctx.db
@@ -186,7 +186,7 @@ export const statsRouter = createTRPCRouter({
   /**
    * Get popular time slots
    */
-  getPopularTimeSlots: adminProcedure.query(async ({ ctx }) => {
+  getPopularTimeSlots: securityOrAdminProcedure.query(async ({ ctx }) => {
     const monthStart = startOfMonth(new Date());
 
     const bookingTimes = await ctx.db

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, Plus, UserCheck, UserX, RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useSession } from "@/lib/auth-client";
 import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,13 +21,15 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "user";
+  role: "admin" | "security" | "user";
   isActive: boolean;
   createdAt: Date | null;
 }
 
 export default function UsersPage() {
   const { t } = useTranslations();
+  const { data: session } = useSession();
+  const isReadOnly = session?.user?.role === "security";
   
   // Search & filter state
   const [search, setSearch] = useState("");
@@ -100,7 +103,7 @@ export default function UsersPage() {
     password?: string;
     firstName: string;
     lastName: string;
-    role: "admin" | "user";
+    role: "admin" | "security" | "user";
     isActive: boolean;
   }) => {
     if (formData.id) {
@@ -162,10 +165,12 @@ export default function UsersPage() {
             {t("adminUsers.description")}
           </p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <Plus className="w-4 h-4" />
-          {t("adminUsers.addUser")}
-        </Button>
+        {!isReadOnly && (
+          <Button onClick={() => setIsFormOpen(true)}>
+            <Plus className="w-4 h-4" />
+            {t("adminUsers.addUser")}
+          </Button>
+        )}
       </div>
 
       {/* Filters */}
@@ -189,6 +194,7 @@ export default function UsersPage() {
         >
           <option value="">{t("adminUsers.allRoles")}</option>
           <option value="admin">{t("roles.admin")}</option>
+          <option value="security">{t("roles.security")}</option>
           <option value="user">{t("roles.user")}</option>
         </Select>
         <Select
@@ -214,7 +220,7 @@ export default function UsersPage() {
       </div>
 
       {/* Bulk actions */}
-      {selectedIds.length > 0 && (
+      {!isReadOnly && selectedIds.length > 0 && (
         <div className="flex items-center gap-3 p-3 bg-violet-50 rounded-xl animate-fade-in">
           <Badge variant="default">{selectedIds.length} {t("common.selected")}</Badge>
           <div className="flex gap-2">
@@ -260,6 +266,7 @@ export default function UsersPage() {
             onToggleStatus={handleToggleStatus}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            isReadOnly={isReadOnly}
           />
 
           {/* Pagination */}

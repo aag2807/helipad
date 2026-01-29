@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, adminProcedure } from "../trpc";
+import { createTRPCRouter, adminProcedure, securityOrAdminProcedure } from "../trpc";
 import { users } from "@/server/db/schema";
 import { eq, like, or, and, desc, asc, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -9,11 +9,11 @@ export const usersRouter = createTRPCRouter({
   /**
    * List all users with search/filter/pagination
    */
-  list: adminProcedure
+  list: securityOrAdminProcedure
     .input(
       z.object({
         search: z.string().optional(),
-        role: z.enum(["admin", "user"]).optional(),
+        role: z.enum(["admin", "security", "user"]).optional(),
         isActive: z.boolean().optional(),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(10),
@@ -90,7 +90,7 @@ export const usersRouter = createTRPCRouter({
   /**
    * Get single user by ID
    */
-  getById: adminProcedure
+  getById: securityOrAdminProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.db.query.users.findFirst({
@@ -126,7 +126,7 @@ export const usersRouter = createTRPCRouter({
         password: z.string().min(8),
         firstName: z.string().min(1).max(50),
         lastName: z.string().min(1).max(50),
-        role: z.enum(["admin", "user"]).default("user"),
+        role: z.enum(["admin", "security", "user"]).default("user"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -180,7 +180,7 @@ export const usersRouter = createTRPCRouter({
         email: z.string().email().optional(),
         firstName: z.string().min(1).max(50).optional(),
         lastName: z.string().min(1).max(50).optional(),
-        role: z.enum(["admin", "user"]).optional(),
+        role: z.enum(["admin", "security", "user"]).optional(),
         isActive: z.boolean().optional(),
       })
     )

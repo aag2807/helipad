@@ -40,6 +40,7 @@ export default function CalendarPage() {
   const calendar = useCalendar("week");
   const currentUserId = session?.user?.id ?? "";
   const isAdmin = session?.user?.role === "admin";
+  const isSecurity = session?.user?.role === "security";
   const { t, translateError } = useTranslations();
 
   // Dialog state
@@ -192,10 +193,13 @@ export default function CalendarPage() {
 
   // Handlers
   const handleSlotClick = useCallback((date: Date, hour: number, minute: number) => {
+    // Security users cannot create bookings
+    if (isSecurity) return;
+    
     setInitialSlot({ date, hour, minute });
     setEditingBooking(null);
     setIsBookingFormOpen(true);
-  }, []);
+  }, [isSecurity]);
 
   const handleBookingClick = useCallback((booking: Booking) => {
     setSelectedBooking(booking);
@@ -281,10 +285,12 @@ export default function CalendarPage() {
             {t("calendarPage.description")}
           </p>
         </div>
-        <Button onClick={handleNewBooking}>
-          <Plus className="w-4 h-4" />
-          {t("calendarPage.newBooking")}
-        </Button>
+        {!isSecurity && (
+          <Button onClick={handleNewBooking}>
+            <Plus className="w-4 h-4" />
+            {t("calendarPage.newBooking")}
+          </Button>
+        )}
       </div>
 
       {/* Calendar Header */}
@@ -310,6 +316,7 @@ export default function CalendarPage() {
               bookings={transformedBookings}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
+              isSecurity={isSecurity}
               onSlotClick={handleSlotClick}
               onBookingClick={handleBookingClick}
             />
@@ -320,7 +327,8 @@ export default function CalendarPage() {
               bookings={transformedBookings}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
-              onSlotClick={handleSlotClick}
+              isSecurity={isSecurity}
+              onSlotClick={isSecurity ? undefined : handleSlotClick}
               onBookingClick={handleBookingClick}
             />
           )}
@@ -330,6 +338,7 @@ export default function CalendarPage() {
               bookings={transformedBookings}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
+              isSecurity={isSecurity}
               onDayClick={handleDayClick}
               onBookingClick={handleBookingClick}
             />

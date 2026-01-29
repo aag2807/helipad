@@ -51,13 +51,15 @@ export function useSSE(options: UseSSEOptions = {}) {
     };
 
     eventSource.onerror = (error) => {
-      console.error("SSE: Error", error);
+      // Only log errors if we've exhausted reconnection attempts
+      if (reconnectAttempts.current >= maxReconnectAttempts) {
+        console.warn("SSE: Connection failed after multiple attempts. Real-time updates disabled.");
+      }
       eventSource.close();
 
       // Attempt reconnection with exponential backoff
       if (reconnectAttempts.current < maxReconnectAttempts) {
         const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-        console.log(`SSE: Reconnecting in ${delay}ms...`);
         
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectAttempts.current++;

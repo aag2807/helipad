@@ -82,3 +82,21 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+/**
+ * Security or Admin procedure - requires admin or security role (read-only admin access)
+ */
+export const securityOrAdminProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  if (ctx.session.user.role !== "admin" && ctx.session.user.role !== "security") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Admin or security access required" });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});

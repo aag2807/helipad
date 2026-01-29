@@ -33,6 +33,9 @@ export async function signIn(username: string, password: string) {
     throw new Error(data.error || "Login failed");
   }
 
+  // Update the store with the user data
+  useAuthStore.getState().setUser(data.user);
+
   return data.user;
 }
 
@@ -66,5 +69,14 @@ export function useSession() {
     data: user ? { user } : null,
     isLoading,
   };
+}
+
+/**
+ * Initialize session from server
+ */
+export async function initializeSession() {
+  const user = await getSession();
+  useAuthStore.getState().setUser(user);
+  useAuthStore.getState().setLoading(false);
 }
 

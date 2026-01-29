@@ -35,6 +35,7 @@ interface MonthViewProps {
   bookings: Booking[];
   currentUserId: string;
   isAdmin?: boolean;
+  isSecurity?: boolean;
   onDayClick: (date: Date) => void;
   onBookingClick: (booking: Booking) => void;
 }
@@ -44,6 +45,7 @@ export function MonthView({
   bookings,
   currentUserId,
   isAdmin = false,
+  isSecurity = false,
   onDayClick,
   onBookingClick,
 }: MonthViewProps) {
@@ -125,7 +127,7 @@ export function MonthView({
               <div className="space-y-1">
                 {dayBookings.slice(0, 3).map((booking) => {
                   const isOwnBooking = booking.userId === currentUserId;
-                  const canViewDetails = isOwnBooking || isAdmin;
+                  const canViewDetails = isOwnBooking || isAdmin || isSecurity;
                   
                   return (
                     <button
@@ -150,14 +152,14 @@ export function MonthView({
                           ? "bg-amber-100 text-amber-800 border border-amber-300 border-dashed hover:ring-1 hover:ring-amber-400 cursor-pointer active:ring-1 active:ring-amber-400"
                           : isOwnBooking
                           ? "bg-violet-100 text-violet-800 hover:ring-1 hover:ring-violet-300 cursor-pointer active:ring-1 active:ring-violet-300"
-                          : isAdmin
+                          : isAdmin || isSecurity
                           ? "bg-blue-100 text-blue-800 hover:ring-1 hover:ring-blue-300 cursor-pointer active:ring-1 active:ring-blue-300"
                           : "bg-zinc-100 text-zinc-700 cursor-not-allowed opacity-60"
                       )}
                     >
                       {isOwnBooking 
                         ? format(new Date(booking.startTime), "h:mm a", { locale: dateLocale })
-                        : isAdmin
+                        : isAdmin || isSecurity
                         ? `${booking.user?.firstName?.[0] || "?"}.${booking.user?.lastName?.[0] || "?"} ${format(new Date(booking.startTime), "h:mm a", { locale: dateLocale })}`
                         : t("calendar.booked")}
                       {booking.status === "pending" && " *"}

@@ -30,7 +30,7 @@ interface HeaderProps {
     id: string;
     firstName: string;
     lastName: string;
-    role: "admin" | "user";
+    role: "admin" | "security" | "user";
   };
 }
 

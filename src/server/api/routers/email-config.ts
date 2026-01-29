@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, adminProcedure, securityOrAdminProcedure } from "@/server/api/trpc";
 import { emailConfigurations } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
 export const emailConfigRouter = createTRPCRouter({
   // Get current email configuration
-  getCurrent: adminProcedure.query(async ({ ctx }) => {
+  getCurrent: securityOrAdminProcedure.query(async ({ ctx }) => {
     const config = await ctx.db.query.emailConfigurations.findFirst({
       where: eq(emailConfigurations.isActive, true),
     });
@@ -14,7 +14,7 @@ export const emailConfigRouter = createTRPCRouter({
   }),
 
   // Get all configurations
-  getAll: adminProcedure.query(async ({ ctx }) => {
+  getAll: securityOrAdminProcedure.query(async ({ ctx }) => {
     const configs = await ctx.db.query.emailConfigurations.findMany({
       orderBy: (emailConfigurations, { desc }) => [
         desc(emailConfigurations.isActive),

@@ -15,6 +15,7 @@ import {
   Plane
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useSession } from "@/lib/auth-client";
 import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,8 +35,10 @@ import { toast } from "@/components/ui/toast";
 import { PassengerList } from "@/components/bookings/passenger-list";
 
 export default function AdminBookingsPage() {
+  const { data: session } = useSession();
   const { t, locale, translateError } = useTranslations();
   const dateLocale = locale === "es" ? es : enUS;
+  const isReadOnly = session?.user?.role === "security";
   
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -338,38 +341,42 @@ export default function AdminBookingsPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        {booking.status === "pending" && (
+                        {!isReadOnly && (
                           <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                              onClick={() => approveBooking.mutate({ id: booking.id })}
-                              disabled={approveBooking.isPending || rejectBooking.isPending}
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => rejectBooking.mutate({ id: booking.id })}
-                              disabled={approveBooking.isPending || rejectBooking.isPending}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
+                            {booking.status === "pending" && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                  onClick={() => approveBooking.mutate({ id: booking.id })}
+                                  disabled={approveBooking.isPending || rejectBooking.isPending}
+                                >
+                                  <Check className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => rejectBooking.mutate({ id: booking.id })}
+                                  disabled={approveBooking.isPending || rejectBooking.isPending}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            {booking.status === "confirmed" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => cancelBooking.mutate({ id: booking.id })}
+                                disabled={cancelBooking.isPending}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            )}
                           </>
-                        )}
-                        {booking.status === "confirmed" && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => cancelBooking.mutate({ id: booking.id })}
-                            disabled={cancelBooking.isPending}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
                         )}
                       </div>
                     </TableCell>
@@ -545,46 +552,50 @@ export default function AdminBookingsPage() {
 
             {/* Modal Footer */}
             <div className="sticky bottom-0 bg-zinc-50 border-t border-zinc-200 px-6 py-4 flex items-center justify-end gap-2 rounded-b-2xl">
-              {selectedBookingDetails.status === "pending" && (
+              {!isReadOnly && (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      rejectBooking.mutate({ id: selectedBookingDetails.id });
-                      setSelectedBookingDetails(null);
-                    }}
-                    disabled={approveBooking.isPending || rejectBooking.isPending}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                  >
-                    <X className="w-4 h-4" />
-                    {t("common.reject")}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      approveBooking.mutate({ id: selectedBookingDetails.id });
-                      setSelectedBookingDetails(null);
-                    }}
-                    disabled={approveBooking.isPending || rejectBooking.isPending}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    <Check className="w-4 h-4" />
-                    {t("common.approve")}
-                  </Button>
+                  {selectedBookingDetails.status === "pending" && (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          rejectBooking.mutate({ id: selectedBookingDetails.id });
+                          setSelectedBookingDetails(null);
+                        }}
+                        disabled={approveBooking.isPending || rejectBooking.isPending}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      >
+                        <X className="w-4 h-4" />
+                        {t("common.reject")}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          approveBooking.mutate({ id: selectedBookingDetails.id });
+                          setSelectedBookingDetails(null);
+                        }}
+                        disabled={approveBooking.isPending || rejectBooking.isPending}
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        <Check className="w-4 h-4" />
+                        {t("common.approve")}
+                      </Button>
+                    </>
+                  )}
+                  {selectedBookingDetails.status === "confirmed" && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        cancelBooking.mutate({ id: selectedBookingDetails.id });
+                        setSelectedBookingDetails(null);
+                      }}
+                      disabled={cancelBooking.isPending}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <X className="w-4 h-4" />
+                      {t("common.cancel")}
+                    </Button>
+                  )}
                 </>
-              )}
-              {selectedBookingDetails.status === "confirmed" && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    cancelBooking.mutate({ id: selectedBookingDetails.id });
-                    setSelectedBookingDetails(null);
-                  }}
-                  disabled={cancelBooking.isPending}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                >
-                  <X className="w-4 h-4" />
-                  {t("common.cancel")}
-                </Button>
               )}
               <Button
                 variant="outline"

@@ -26,9 +26,10 @@ interface WeekViewProps {
   bookings: Booking[];
   currentUserId: string;
   isAdmin?: boolean;
+  isSecurity?: boolean;
   startHour?: number;
   endHour?: number;
-  onSlotClick: (date: Date, hour: number, minute: number) => void;
+  onSlotClick?: (date: Date, hour: number, minute: number) => void;
   onBookingClick: (booking: Booking) => void;
 }
 
@@ -37,6 +38,7 @@ export function WeekView({
   bookings,
   currentUserId,
   isAdmin = false,
+  isSecurity = false,
   startHour = 6,
   endHour = 22,
   onSlotClick,
@@ -136,7 +138,7 @@ export function WeekView({
                           : "hover:bg-emerald-50 cursor-pointer"
                       )}
                       onClick={() => {
-                        if (!isPast && !hasBooking) {
+                        if (!isPast && !hasBooking && onSlotClick) {
                           onSlotClick(day, slot.hour, slot.minute);
                         }
                       }}
@@ -153,7 +155,7 @@ export function WeekView({
                         const bookingEnd = new Date(booking.endTime);
 
                         const isOwnBooking = booking.userId === currentUserId;
-                        const canViewDetails = isOwnBooking || isAdmin;
+                        const canViewDetails = isOwnBooking || isAdmin || isSecurity;
 
                         return (
                           <button
@@ -178,7 +180,7 @@ export function WeekView({
                                 ? "bg-amber-100 text-amber-800 border-2 border-amber-300 border-dashed hover:ring-2 hover:ring-offset-1 hover:ring-amber-400 cursor-pointer active:ring-2 active:ring-amber-400"
                                 : isOwnBooking
                                 ? "bg-violet-100 text-violet-800 hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 cursor-pointer active:ring-2 active:ring-violet-300"
-                                : isAdmin
+                                : isAdmin || isSecurity
                                 ? "bg-blue-100 text-blue-800 hover:ring-2 hover:ring-offset-1 hover:ring-blue-300 cursor-pointer active:ring-2 active:ring-blue-300"
                                 : "bg-zinc-100 text-zinc-700 cursor-not-allowed opacity-60"
                             )}

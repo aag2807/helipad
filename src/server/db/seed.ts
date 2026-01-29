@@ -42,6 +42,21 @@ async function seed() {
     });
 
     console.log("✅ Created demo user (username: demo, password: demo1234)");
+
+    // Create security user
+    const securityPassword = await bcrypt.hash("security123", 10);
+    
+    await db.insert(users).values({
+      username: "security",
+      email: "security@email.com",
+      password: securityPassword,
+      firstName: "Security",
+      lastName: "Observer",
+      role: "security",
+      isActive: true,
+    });
+
+    console.log("✅ Created security user (username: security, password: security123)");
   }
 
   // Seed default settings

@@ -24,7 +24,7 @@ export type SessionUser = {
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "user";
+  role: "admin" | "security" | "user";
   isActive: boolean;
 };
 

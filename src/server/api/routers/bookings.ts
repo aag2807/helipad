@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { format } from "date-fns";
-import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, adminProcedure, securityOrAdminProcedure } from "../trpc";
 import { bookings, users, passengers } from "@/server/db/schema";
 import { eq, and, gte, lte, lt, gt, desc, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -29,7 +29,7 @@ export const bookingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const start = new Date(input.startDate);
       const end = new Date(input.endDate);
-      const isAdmin = ctx.session.user.role === "admin";
+      const isAdminOrSecurity = ctx.session.user.role === "admin" || ctx.session.user.role === "security";
 
       // Get confirmed bookings (visible to all users)
       const confirmedBookings = await ctx.db
@@ -61,8 +61,8 @@ export const bookingsRouter = createTRPCRouter({
         .orderBy(bookings.startTime);
 
       // Get pending bookings based on role
-      // Admins see all pending bookings, regular users only see their own
-      const pendingBookingsWhere = isAdmin
+      // Admins and security see all pending bookings, regular users only see their own
+      const pendingBookingsWhere = isAdminOrSecurity
         ? and(
             eq(bookings.status, "pending"),
             gte(bookings.startTime, start),
@@ -174,8 +174,9 @@ export const bookingsRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
       }
 
-      // Only allow viewing if admin or own booking
-      if (ctx.session.user.role !== "admin" && booking.userId !== ctx.session.user.id) {
+      // Allow viewing if admin, security, or own booking
+      const isAdminOrSecurity = ctx.session.user.role === "admin" || ctx.session.user.role === "security";
+      if (!isAdminOrSecurity && booking.userId !== ctx.session.user.id) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
 
@@ -537,7 +538,7 @@ export const bookingsRouter = createTRPCRouter({
   /**
    * Admin: List all bookings with filters
    */
-  listAll: adminProcedure
+  listAll: securityOrAdminProcedure
     .input(
       z.object({
         startDate: z.string().datetime().optional(),
@@ -778,7 +779,7 @@ export const bookingsRouter = createTRPCRouter({
   /**
    * Admin: Get all pending bookings
    */
-  getPending: adminProcedure
+  getPending: securityOrAdminProcedure
     .input(
       z.object({
         page: z.number().min(1).default(1),

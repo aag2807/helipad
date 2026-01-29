@@ -30,7 +30,7 @@ const userFormSchema = z.object({
   password: z.string().optional(),
   firstName: z.string().min(1, "First name is required").max(50),
   lastName: z.string().min(1, "Last name is required").max(50),
-  role: z.enum(["admin", "user"]),
+  role: z.enum(["admin", "security", "user"]),
   isActive: z.boolean(),
 });
 
@@ -42,7 +42,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "user";
+  role: "admin" | "security" | "user";
   isActive: boolean;
 }
 
@@ -230,6 +230,7 @@ export function UserForm({
                 </Label>
                 <Select id="role" {...register("role")} error={!!errors.role}>
                   <option value="user">{t("roles.user")}</option>
+                  <option value="security">{t("roles.security")}</option>
                   <option value="admin">{t("roles.admin")}</option>
                 </Select>
               </div>

@@ -9,16 +9,17 @@ import { useTranslations } from "@/hooks/use-translations";
 
 interface MobileNavProps {
   isAdmin: boolean;
+  isSecurity?: boolean;
 }
 
-export function MobileNav({ isAdmin }: MobileNavProps) {
+export function MobileNav({ isAdmin, isSecurity }: MobileNavProps) {
   const pathname = usePathname();
   const { t } = useTranslations();
 
   const navItems = [
     { label: t("navigation.calendar"), href: ROUTES.calendar, icon: Calendar },
     { label: t("navigation.bookings"), href: ROUTES.myBookings, icon: ListOrdered },
-    ...(isAdmin
+    ...(isAdmin || isSecurity
       ? [{ label: t("navigation.admin"), href: ROUTES.adminDashboard, icon: LayoutDashboard }]
       : []),
     { label: t("navigation.profile"), href: "/profile", icon: User },
